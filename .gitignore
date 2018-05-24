@@ -1,0 +1,8 @@
+.pypirc
+__pycache__
+*.pyc
+*.log
+*.pkl
+build/
+dist/
+imgdupes.egg-info/

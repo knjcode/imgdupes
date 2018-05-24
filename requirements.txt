@@ -1,0 +1,10 @@
+future==0.16.0
+ImageHash==4.0
+joblib==0.11
+opencv-python==3.4.1.15
+pathlib==1.0.1
+Pillow==5.1.0
+six==1.11.0
+termcolor==1.1.0
+tqdm==4.23.3
+webcolors==1.8.1
