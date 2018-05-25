@@ -26,8 +26,8 @@ class HashCache:
     def get(self, filepath):
         return self.cache.get(filepath, False)
 
-    def set(self, filepath, hash):
-        self.cache[filepath] = hash
+    def set(self, filepath, hsh):
+        self.cache[filepath] = hsh
 
     def load(self, load_path):
         self.cache = joblib.load(load_path)
