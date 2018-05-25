@@ -67,19 +67,19 @@ class ImageDeduper:
 
 
     def set_hash(self, img):
-        hash = self.hashfunc(Image.open(img))
-        self.hashcache.set(img, hash)
+        hsh = self.hashfunc(Image.open(img))
+        self.hashcache.set(img, hsh)
 
     def get_hash(self, img):
         try:
-            hash = self.hashcache.get(img)
-            if not hash:
+            hsh = self.hashcache.get(img)
+            if not hsh:
                 with Image.open(img) as i:
-                    hash = self.hashfunc(i)
-                    self.hashcache.set(img, hash)
+                    hsh = self.hashfunc(i)
+                    self.hashcache.set(img, hsh)
         except Exception as e:
             print('Problem:', e, 'with', img)
-        return hash
+        return hsh
 
 
     def gen_image_filenames(self, target_dir, recursive):
@@ -155,25 +155,25 @@ class ImageDeduper:
 
     def get_closest_hash_and_len(self, img):
         # use if hash cache exists
-        hash = self.get_hash(img)
+        hsh = self.get_hash(img)
 
         closest_hash_keys = ''
         closest_hash_len = 64
-        for hashes in self.group:
-            if isinstance(hashes, str):
+        for hshes in self.group:
+            if isinstance(hshes, str):
                 # split concatenated string hashes
-                for key in hashes.split(' '):
+                for key in hshes.split(' '):
                     hash_key = imagehash.hex_to_hash(key)
-                    d = (hash - hash_key)
+                    d = (hsh - hash_key)
                     if (d <= self.hamming_distance) and (d <= closest_hash_len):
                         closest_hash_len = d
-                        closest_hash_keys = hashes
+                        closest_hash_keys = hshes
             else:
                 # single hash
-                d = (hash - hashes)
+                d = (hsh - hshes)
                 if (d <= self.hamming_distance) and (d <= closest_hash_len):
                     closest_hash_len = d
-                    closest_hash_keys = hashes
+                    closest_hash_keys = hshes
         return closest_hash_len, closest_hash_keys
 
 
