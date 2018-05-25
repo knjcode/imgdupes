@@ -12,13 +12,39 @@ logger.addHandler(handler)
 logger.propagate = False
 
 
+from pathlib import Path
+from common.imagededuper import ImageDeduper
+
 import sys
 
-from common.imagededuper import ImageDeduper
+
+img_file_ext = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.gif', '.GIF']
+
+
+def is_image(path):
+    return path.suffix in img_file_ext
+
+
+def gen_image_filenames(target_dir, recursive):
+    image_filenames = []
+    if recursive:
+        for path in Path(target_dir).glob('**/*'):
+            if is_image(path):
+                image_filenames.append(str(path))
+    else:
+        for path in Path(target_dir).glob('*'):
+            if is_image(path):
+                image_filenames.append(str(path))
+    if len(image_filenames) == 0:
+        logger.error("Image not found. To search the directory recursively, add the --recursive option.")
+        sys.exit(0)
+    return image_filenames
 
 
 def dedupe_images(args):
-    deduper = ImageDeduper(args)
+    target_dir = args.target_dir
+    recursive = args.recursive
+    deduper = ImageDeduper(args, gen_image_filenames(target_dir, recursive))
     deduper.dedupe(args)
     delete_candidate = deduper.preserve(args)
 
@@ -49,6 +75,8 @@ def main(argv=sys.argv[1:]):
         help="search images recursively from the target directory")
     parser.add_argument("-c", "--imgcat", action="store_true",
         help="display duplicate images for iTerm2")
+    parser.add_argument("--ngt", action="store_true",
+        help="use NGT for calculating Hamming distance between hash of images")
     parser.add_argument("--log", action="store_true",
         help="output logs of duplicate and delete files")
     parser.add_argument("--size", type=str, default="256x256",

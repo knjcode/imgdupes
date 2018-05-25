@@ -30,7 +30,11 @@ class HashCache:
         self.cache[filepath] = hsh
 
     def load(self, load_path):
-        self.cache = joblib.load(load_path)
+        if load_path and Path(load_path).exists():
+            self.cache = joblib.load(load_path)
+            logger.debug("Load hash cache: {}".format(load_path))
+        else:
+            self.cache = {}
 
     def dump(self, dump_path):
         joblib.dump(self.cache, dump_path, protocol=2, compress=True)
