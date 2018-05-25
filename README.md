@@ -8,6 +8,11 @@ You can delete duplicate image files with an operation similar to the [`fdupes`]
 It is better to pre-deduplicate identical files with [`fdupes`] in advance.
 
 
+## For large dataset
+
+It is possible to speed up dedupe process by approximate nearest neighbor search of hamming distance with [NGT].
+See [Against large dataset](#Against_large_dataset) section for details.
+
 
 # Install
 
@@ -36,6 +41,19 @@ $ imgdupes --recursive --imgcat 101_ObjectCategories phash 4
 ```
 
 
+# Against large dataset
+
+`imgdupes` supports approximate nearest neighbor search of hamming distance with [NGT].
+
+To dedupe images using NGT, run with `--ngt` option after installing NGT and python binding.
+
+```bash
+$ imgdupes --recursive --imgcat --ngt 101_ObjectCategories phash 4
+```
+
+For instructions on installing NGT and python binding, see [NGT] and [python NGT].
+
+
 # Available hash algorithm
 
 `imgdupes` uses the [ImageHash] to calculate perceptual hash.
@@ -56,6 +74,10 @@ search images recursively from the target directory
 `-c` `--imgcat` (default=False)
 
 display duplicate images for iTerm2
+
+`--ngt`
+
+use NGT for calculating Hamming distance between hash of images"
 
 `--log`
 
@@ -105,3 +127,5 @@ MIT
 [pHash]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
 [dHash]: http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
 [wHash]: https://fullstackml.com/2016/07/02/wavelet-image-hash-in-python/
+[NGT]: https://github.com/yahoojapan/NGT
+[python NGT]: https://github.com/yahoojapan/NGT/tree/master/python

@@ -27,25 +27,25 @@ import sys
 
 from common.imgcatutil import imgcat_for_iTerm2, create_tile_img
 from common.hashcache import HashCache
+from common.ngthashcache import NgtHashCache
 
 
 class ImageDeduper:
-    def __init__(self, args):
-        self.img_file_ext = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.gif', '.GIF']
+    def __init__(self, args, image_filenames):
         self.target_dir = args.target_dir
         self.recursive = args.recursive
-        self.image_filenames = self.gen_image_filenames(args.target_dir, args.recursive)
+        self.image_filenames = image_filenames
         self.hash_method = args.hash_method
         self.hashfunc = self.gen_hashfunc(args.hash_method)
         self.hamming_distance = args.hamming_distance
+        self.ngt = args.ngt
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
-        self.hashcache = HashCache()
+        if args.ngt:
+            self.hashcache = NgtHashCache(self.image_filenames, self.hash_method)
+        else:
+            self.hashcache = HashCache()
         self.group = {}
         self.num_duplecate_set = 0
-
-
-    def is_image(self, path):
-        return path.suffix in self.img_file_ext
 
 
     def get_valid_filename(self, path):
@@ -54,20 +54,35 @@ class ImageDeduper:
 
 
     def get_hashcache_dump_name(self):
-        return "hash_cache_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
+        if self.ngt:
+            return "hash_cache_ngt_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
+        else:
+            return "hash_cache_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
 
 
     def get_duplicate_log_name(self):
-        return "dup_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        if self.ngt:
+            return "dup_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        else:
+            return "dup_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
 
 
     def get_delete_log_name(self):
-        return "del_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        if self.ngt:
+            return "del_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        else:
+            return "del_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+
+
+    def get_ngt_index_path(self):
+        return "ngt_{}_{}_{}.ngt_index".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+
 
 
     def set_hash(self, img):
-        hsh = self.hashfunc(Image.open(img))
-        self.hashcache.set(img, hsh)
+        with Image.open(img) as i:
+            hsh = self.hashfunc(i)
+            self.hashcache.set(img, hsh)
 
 
     def get_hash(self, img):
@@ -80,22 +95,6 @@ class ImageDeduper:
         except Exception as e:
             print('Problem:', e, 'with', img)
         return hsh
-
-
-    def gen_image_filenames(self, target_dir, recursive):
-        image_filenames = []
-        if recursive:
-            for path in Path(target_dir).glob('**/*'):
-                if self.is_image(path):
-                    image_filenames.append(str(path))
-        else:
-            for path in Path(target_dir).glob('*'):
-                if self.is_image(path):
-                    image_filenames.append(str(path))
-        if len(image_filenames) == 0:
-            logger.error("Image not found. To search the directory recursively, add the --recursive option.")
-            sys.exit(0)
-        return image_filenames
 
 
     def gen_hashfunc(self, hash_method):
@@ -113,7 +112,7 @@ class ImageDeduper:
 
 
     def load_hashcache(self):
-        self.hashcache = HashCache(self.get_hashcache_dump_name())
+        self.hashcache.load(self.get_hashcache_dump_name())
 
 
     def dump_hashcache(self):
@@ -188,38 +187,103 @@ class ImageDeduper:
         if args.cache:
             self.load_hashcache()
 
-        for img in tqdm(self.image_filenames):
-            closest_hash_len, closest_hash_keys = self.get_closest_hash_and_len(img)
-            imghash = self.get_hash(img)
-            if closest_hash_len == 0:
-                # same hash found
-                self.group[imghash] = self.group.get(imghash, []) + [img]
-            elif closest_hash_keys is not '':
-                # generate concatenate string hashes
-                self.add_images_into_group(closest_hash_keys, imghash, img)
-            else:
-                # closest hash not found
-                # add single hash
-                self.group[imghash] = [img]
+        if not args.ngt:
+            for img in tqdm(self.image_filenames):
+                closest_hash_len, closest_hash_keys = self.get_closest_hash_and_len(img)
+                imghash = self.get_hash(img)
+                if closest_hash_len == 0:
+                    # same hash found
+                    self.group[imghash] = self.group.get(imghash, []) + [img]
+                elif closest_hash_keys is not '':
+                    # generate concatenate string hashes
+                    self.add_images_into_group(closest_hash_keys, imghash, img)
+                else:
+                    # closest hash not found
+                    # add single hash
+                    self.group[imghash] = [img]
+        else:
+            try:
+                from ngt import base as ngt
+            except:
+                logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
+                sys.exit(1)
+            index_path = self.get_ngt_index_path()
+            logger.warn("NGT: Creating NGT index")
+            ngt_index = ngt.Index.create(index_path.encode(), 64, object_type="Integer", distance_type="Hamming")
+            for hsh in tqdm(self.hashcache.hshs()):
+                ngt_index.insert_object(hsh)
+            logger.warn("NGT: Building index")
+            ngt_index.build_index()
+            ngt_index.save()
+            logger.warn("NGT: Indexing complete")
+
+            # NGT Approximate neighbor search
+            logger.warn("NGT: Approximate neighbor searching")
+            hshs = self.hashcache.hshs()
+            check_list = [0] * len(hshs)
+            current_group_num = 1
+            for i in tqdm(range(len(hshs))):
+                new_group_found = False
+                if check_list[i] != 0:
+                    # already grouped image
+                    continue
+                for res in ngt_index.search(hshs[i], k=20, epsilon=0.1):
+                    if res.id-1 == i:
+                        continue
+                    else:
+                        if res.distance <= self.hamming_distance:
+                            if check_list[res.id-1] == 0:
+                                # new group
+                                check_list[i] = current_group_num
+                                check_list[res.id-1] = current_group_num
+                                new_group_found = True
+                            else:
+                                # exists group
+                                check_list[i] = check_list[res.id-1]
+
+                if new_group_found:
+                    current_group_num += 1
+
+            # update self.group
+            for i in range(1,current_group_num):
+                current_img_list = []
+                for j in range(len(hshs)):
+                    if check_list[j] == i:
+                        current_img_list.append(self.image_filenames[j])
+                self.group[i] = current_img_list
+
 
         # dump hash cache
         if args.cache:
             self.dump_hashcache()
 
-        num_duplecate_set = 0
-        for k, img_list in six.iteritems(self.group):
-            if len(img_list) > 1:
-                num_duplecate_set += 1
-        self.num_duplecate_set = num_duplecate_set
+        if not args.ngt:
+            num_duplecate_set = 0
+            for k, img_list in six.iteritems(self.group):
+                if len(img_list) > 1:
+                    num_duplecate_set += 1
+            self.num_duplecate_set = num_duplecate_set
 
-        # write duplicate log file
-        if self.num_duplecate_set > 0 and args.log:
-            now = datetime.now().strftime('%Y%m%d%H%M%S')
-            duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
-            with open(duplicate_log_file, 'w') as f:
-                for k, img_list in six.iteritems(self.group):
-                    if len(img_list) > 1:
-                        f.write(" ".join(img_list) + '\n')
+            # write duplicate log file
+            if self.num_duplecate_set > 0 and args.log:
+                now = datetime.now().strftime('%Y%m%d%H%M%S')
+                duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
+                with open(duplicate_log_file, 'w') as f:
+                    for k, img_list in six.iteritems(self.group):
+                        if len(img_list) > 1:
+                            f.write(" ".join(img_list) + '\n')
+
+        else:
+            self.num_duplecate_set = current_group_num - 1
+
+            # write duplicate log file for ngt
+            if self.num_duplecate_set > 0 and args.log:
+                now = datetime.now().strftime('%Y%m%d%H%M%S')
+                duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
+                with open(duplicate_log_file, 'w') as f:
+                    for k, img_list in six.iteritems(self.group):
+                        if len(img_list) > 1:
+                            f.write(" ".join(img_list) + '\n')
 
 
     def preserve(self, args):
