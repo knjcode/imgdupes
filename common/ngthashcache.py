@@ -12,7 +12,6 @@ logger.propagate = False
 
 from pathlib import Path
 from PIL import Image
-from multiprocessing import Pool
 from tqdm import tqdm
 
 import imagehash
@@ -37,8 +36,10 @@ class NgtHashCache:
     def __len__(self):
         return len(self.cache)
 
+
     def hshs(self):
         return self.cache
+
 
     def get(self, index):
         return self.cache[index]
@@ -64,9 +65,10 @@ class NgtHashCache:
 
 
     def make_hash_list(self):
-        logger.warn("NGT: Calculating image hashes...")
+        logger.warn("Calculating image hashes for NGT...")
         for i, image in enumerate(tqdm(self.image_filenames)):
             self.set(i, self.gen_hash(image))
+
 
     def make_index(self, index_path, hshs):
         logger.warn("NGT: Making index...")
@@ -98,6 +100,7 @@ class NgtHashCache:
             if len(self.image_filenames) == len(self.cache):
                 logger.debug("Load hash cache: {}".format(load_path))
             else:
+                self.cache = [[2] * 64 for i in range(len(self.image_filenames))]
                 self.make_hash_list()
         else:
             self.cache = [[2] * 64 for i in range(len(self.image_filenames))]

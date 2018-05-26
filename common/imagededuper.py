@@ -36,14 +36,13 @@ class ImageDeduper:
         self.recursive = args.recursive
         self.image_filenames = image_filenames
         self.hash_method = args.hash_method
-        self.hashfunc = self.gen_hashfunc(args.hash_method)
         self.hamming_distance = args.hamming_distance
         self.ngt = args.ngt
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
         if args.ngt:
             self.hashcache = NgtHashCache(self.image_filenames, self.hash_method)
         else:
-            self.hashcache = HashCache()
+            self.hashcache = HashCache(self.image_filenames, self.hash_method)
         self.group = {}
         self.num_duplecate_set = 0
 
@@ -97,20 +96,6 @@ class ImageDeduper:
         return hsh
 
 
-    def gen_hashfunc(self, hash_method):
-        if hash_method == 'ahash':
-            hashfunc = imagehash.average_hash
-        elif hash_method == 'phash':
-            hashfunc = imagehash.phash
-        elif hash_method == 'dhash':
-            hashfunc = imagehash.dhash
-        elif hash_method == 'whash-haar':
-            hashfunc = imagehash.whash
-        elif hash_method == 'whash-db4':
-            hashfunc = lambda img: imagehash.whash(img, mode='db4')
-        return hashfunc
-
-
     def load_hashcache(self):
         self.hashcache.load(self.get_hashcache_dump_name())
 
@@ -152,56 +137,48 @@ class ImageDeduper:
                     sys.stdout.write(error_prompt)
 
 
-    def get_closest_hash_and_len(self, img):
-        # use if hash cache exists
-        hsh = self.get_hash(img)
-
-        closest_hash_keys = ''
-        closest_hash_len = 64
-        for hshes in self.group:
-            if isinstance(hshes, str):
-                # split concatenated string hashes
-                for key in hshes.split(' '):
-                    hash_key = imagehash.hex_to_hash(key)
-                    d = (hsh - hash_key)
-                    if (d <= self.hamming_distance) and (d <= closest_hash_len):
-                        closest_hash_len = d
-                        closest_hash_keys = hshes
-            else:
-                # single hash
-                d = (hsh - hshes)
-                if (d <= self.hamming_distance) and (d <= closest_hash_len):
-                    closest_hash_len = d
-                    closest_hash_keys = hshes
-        return closest_hash_len, closest_hash_keys
-
-
-    def add_images_into_group(self, hash_keys, imghash, img):
-        new_keys = "{0} {1}".format(hash_keys,imghash)
-        self.group[new_keys] = self.group.get(new_keys, []) + self.group.get(hash_keys, []) + self.group.get(imghash, []) + [img]
-        self.group.pop(hash_keys, None)
-        self.group.pop(imghash, None)
-
-
     def dedupe(self, args):
         if args.cache:
             self.load_hashcache()
 
         if not args.ngt:
-            for img in tqdm(self.image_filenames):
-                closest_hash_len, closest_hash_keys = self.get_closest_hash_and_len(img)
-                imghash = self.get_hash(img)
-                if closest_hash_len == 0:
-                    # same hash found
-                    self.group[imghash] = self.group.get(imghash, []) + [img]
-                elif closest_hash_keys is not '':
-                    # generate concatenate string hashes
-                    self.add_images_into_group(closest_hash_keys, imghash, img)
-                else:
-                    # closest hash not found
-                    # add single hash
-                    self.group[imghash] = [img]
+            hshs = self.hashcache.hshs()
+            check_list = [0] * len(hshs)
+            current_group_num = 1
+            for i in tqdm(range(len(hshs))):
+                if check_list[i] != 0:
+                    # already grouped image
+                    continue
+                new_group_found = False
+                hshi = self.hashcache.get(i)
+                for j in range(i+1, len(hshs)):
+                    if check_list[j] != 0:
+                        # already grouped image
+                        continue
+                    hshj = self.hashcache.get(j)
+                    if (hshi - hshj) <= self.hamming_distance:
+                        if check_list[j] == 0:
+                            # new group
+                            check_list[i] = current_group_num
+                            check_list[j] = current_group_num
+                            new_group_found = True
+                        else:
+                            # exists group
+                            check_list[i] = check_list[j]
+
+                if new_group_found:
+                    current_group_num += 1
+
+            # update self.group
+            for i in range(1,current_group_num):
+                current_img_list = []
+                for j in range(len(hshs)):
+                    if check_list[j] == i:
+                        current_img_list.append(self.image_filenames[j])
+                self.group[i] = current_img_list
+
         else:
+            # NGT
             try:
                 from ngt import base as ngt
             except:
