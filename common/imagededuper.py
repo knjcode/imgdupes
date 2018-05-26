@@ -63,37 +63,18 @@ class ImageDeduper:
         if self.ngt:
             return "dup_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
         else:
-            return "dup_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "dup_std_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
 
 
     def get_delete_log_name(self):
         if self.ngt:
             return "del_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
         else:
-            return "del_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "del_std_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
 
 
     def get_ngt_index_path(self):
         return "ngt_{}_{}_{}.ngt_index".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
-
-
-
-    def set_hash(self, img):
-        with Image.open(img) as i:
-            hsh = self.hashfunc(i)
-            self.hashcache.set(img, hsh)
-
-
-    def get_hash(self, img):
-        try:
-            hsh = self.hashcache.get(img)
-            if not hsh:
-                with Image.open(img) as i:
-                    hsh = self.hashfunc(i)
-                    self.hashcache.set(img, hsh)
-        except Exception as e:
-            print('Problem:', e, 'with', img)
-        return hsh
 
 
     def load_hashcache(self):
@@ -236,7 +217,7 @@ class ImageDeduper:
 
         if not args.ngt:
             num_duplecate_set = 0
-            for k, img_list in six.iteritems(self.group):
+            for _k, img_list in six.iteritems(self.group):
                 if len(img_list) > 1:
                     num_duplecate_set += 1
             self.num_duplecate_set = num_duplecate_set
@@ -246,7 +227,7 @@ class ImageDeduper:
                 now = datetime.now().strftime('%Y%m%d%H%M%S')
                 duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
                 with open(duplicate_log_file, 'w') as f:
-                    for k, img_list in six.iteritems(self.group):
+                    for _k, img_list in six.iteritems(self.group):
                         if len(img_list) > 1:
                             f.write(" ".join(img_list) + '\n')
 
@@ -258,7 +239,7 @@ class ImageDeduper:
                 now = datetime.now().strftime('%Y%m%d%H%M%S')
                 duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
                 with open(duplicate_log_file, 'w') as f:
-                    for k, img_list in six.iteritems(self.group):
+                    for _k, img_list in six.iteritems(self.group):
                         if len(img_list) > 1:
                             f.write(" ".join(img_list) + '\n')
 
@@ -267,7 +248,7 @@ class ImageDeduper:
         delete_candidate = []
 
         current_set = 0
-        for k, img_list in six.iteritems(self.group):
+        for _k, img_list in six.iteritems(self.group):
             if len(img_list) > 1:
                 current_set += 1
 

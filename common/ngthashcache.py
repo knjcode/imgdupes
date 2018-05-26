@@ -12,6 +12,7 @@ logger.propagate = False
 
 from pathlib import Path
 from PIL import Image
+from termcolor import colored, cprint
 from tqdm import tqdm
 
 import imagehash
@@ -65,19 +66,14 @@ class NgtHashCache:
 
 
     def make_hash_list(self):
+        try:
+            from ngt import base as _ngt
+        except:
+            logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
+            sys.exit(1)
         logger.warn("Calculating image hashes for NGT...")
         for i, image in enumerate(tqdm(self.image_filenames)):
             self.set(i, self.gen_hash(image))
-
-
-    def make_index(self, index_path, hshs):
-        logger.warn("NGT: Making index...")
-        ngt_index = ngt.Index.create(index_path, 64)
-        for hsh in hshs:
-            ngt_index.insert_object(hsh)
-        ngt_index.build_index()
-        ngt_index.save()
-        logger.warn("NGT: Indexing done")
 
 
     def gen_hashfunc(self, hash_method):
