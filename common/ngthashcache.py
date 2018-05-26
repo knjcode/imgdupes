@@ -76,16 +76,6 @@ class NgtHashCache:
             self.set(i, self.gen_hash(image))
 
 
-    def make_index(self, index_path, hshs):
-        logger.warn("NGT: Making index...")
-        ngt_index = ngt.Index.create(index_path, 64)
-        for hsh in hshs:
-            ngt_index.insert_object(hsh)
-        ngt_index.build_index()
-        ngt_index.save()
-        logger.warn("NGT: Indexing done")
-
-
     def gen_hashfunc(self, hash_method):
         if hash_method == 'ahash':
             hashfunc = imagehash.average_hash

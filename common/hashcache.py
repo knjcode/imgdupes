@@ -45,10 +45,6 @@ class HashCache:
         return self.cache[index]
 
 
-    # def set(self, index, hsh):
-    #     self.cache[index] = hsh
-
-
     def gen_hash(self, img):
         try:
             with Image.open(img) as i:
@@ -65,7 +61,7 @@ class HashCache:
 
     def make_hash_list(self):
         logger.warn("Calculating image hashes...")
-        for i, image in enumerate(tqdm(self.image_filenames)):
+        for image in tqdm(self.image_filenames):
             self.cache.append(self.gen_hash(image))
 
 
