@@ -10,6 +10,7 @@ logger.addHandler(handler)
 logger.propagate = False
 
 
+from multiprocessing import Pool, cpu_count
 from pathlib import Path
 from PIL import Image
 from termcolor import colored, cprint
@@ -19,10 +20,14 @@ import imagehash
 import joblib
 import sys
 
+from common.spinner import Spinner
+
+
 class NgtHashCache:
-    def __init__(self, image_filenames, hash_method, load_path=None):
+    def __init__(self, image_filenames, hash_method, num_hash_proc, load_path=None):
         self.image_filenames = image_filenames
         self.hashfunc = self.gen_hashfunc(hash_method)
+        self.num_hash_proc = num_hash_proc
         self.cache = []
         if load_path and Path(load_path).exists():
             self.cache = joblib.load(load_path)
@@ -66,14 +71,22 @@ class NgtHashCache:
 
 
     def make_hash_list(self):
+        if self.num_hash_proc is None:
+            self.num_hash_proc = cpu_count() - 1
         try:
             from ngt import base as _ngt
         except:
             logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
             sys.exit(1)
-        logger.warn("Calculating image hashes for NGT...")
-        for i, image in enumerate(tqdm(self.image_filenames)):
-            self.set(i, self.gen_hash(image))
+        try:
+            spinner = Spinner(prefix="Calculating image hashes for NGT...")
+            spinner.start()
+            with Pool(self.num_hash_proc) as pool:
+                self.cache = pool.map(self.gen_hash, self.image_filenames)
+            spinner.stop()
+        except KeyboardInterrupt:
+            spinner.stop()
+            sys.exit(1)
 
 
     def gen_hashfunc(self, hash_method):

@@ -10,6 +10,7 @@ logger.addHandler(handler)
 logger.propagate = False
 
 
+from multiprocessing import Pool, cpu_count
 from pathlib import Path
 from PIL import Image
 from tqdm import tqdm
@@ -18,10 +19,14 @@ import imagehash
 import joblib
 import sys
 
+from common.spinner import Spinner
+
+
 class HashCache:
-    def __init__(self, image_filenames, hash_method, load_path=None):
+    def __init__(self, image_filenames, hash_method, num_hash_proc, load_path=None):
         self.image_filenames = image_filenames
         self.hashfunc = self.gen_hashfunc(hash_method)
+        self.num_hash_proc = num_hash_proc
         self.cache = []
         if load_path and Path(load_path).exists():
             self.cache = joblib.load(load_path)
@@ -59,10 +64,18 @@ class HashCache:
             yield seq[i:i+chunk_size]
 
 
-    def make_hash_list(self):
-        logger.warn("Calculating image hashes...")
-        for image in tqdm(self.image_filenames):
-            self.cache.append(self.gen_hash(image))
+    def make_hash_list(self, process=None):
+        if self.num_hash_proc is None:
+            self.num_hash_proc = cpu_count() - 1
+        try:
+            spinner = Spinner(prefix="Calculating image hashes...")
+            spinner.start()
+            with Pool(self.num_hash_proc) as pool:
+                self.cache = pool.map(self.gen_hash, self.image_filenames)
+            spinner.stop()
+        except KeyboardInterrupt:
+            spinner.stop()
+            sys.exit(1)
 
 
     def gen_hashfunc(self, hash_method):
