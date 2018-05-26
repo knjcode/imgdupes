@@ -129,36 +129,34 @@ class ImageDeduper:
             check_list = [0] * len(hshs)
             current_group_num = 1
             for i in tqdm(range(len(hshs))):
-                if check_list[i] != 0:
-                    # already grouped image
-                    continue
                 new_group_found = False
                 hshi = self.hashcache.get(i)
                 for j in range(i+1, len(hshs)):
-                    if check_list[j] != 0:
-                        # already grouped image
-                        continue
                     hshj = self.hashcache.get(j)
                     if (hshi - hshj) <= self.hamming_distance:
-                        if check_list[j] == 0:
+                        if check_list[j] == 0 and check_list[i] == 0:
                             # new group
+                            new_group_found = True
                             check_list[i] = current_group_num
                             check_list[j] = current_group_num
-                            new_group_found = True
-                        else:
+                            self.group[current_group_num] = [self.image_filenames[i]]
+                            self.group[current_group_num].extend([self.image_filenames[j]])
+                        elif check_list[j] == 0 and check_list[i] != 0:
                             # exists group
-                            check_list[i] = check_list[j]
+                            exists_group_num = check_list[i]
+                            check_list[j] = exists_group_num
+                            self.group[exists_group_num].extend([self.image_filenames[j]])
+                        elif check_list[j] != 0 and check_list[i] == 0:
+                            # exists group
+                            exists_group_num = check_list[j]
+                            check_list[i] = exists_group_num
+                            self.group[exists_group_num].extend([self.image_filenames[i]])
+                        else: # check_list[j] != 0 and check_list[i] != 0
+                            pass
 
                 if new_group_found:
                     current_group_num += 1
 
-            # update self.group
-            for i in range(1,current_group_num):
-                current_img_list = []
-                for j in range(len(hshs)):
-                    if check_list[j] == i:
-                        current_img_list.append(self.image_filenames[j])
-                self.group[i] = current_img_list
 
         else:
             # NGT
@@ -198,43 +196,32 @@ class ImageDeduper:
                                 check_list[res.id-1] = current_group_num
                                 self.group[current_group_num] = [self.image_filenames[i]]
                                 self.group[current_group_num].extend([self.image_filenames[res.id-1]])
-                            else:
+                            elif check_list[res.id-1] == 0 and check_list[i] != 0:
                                 # exists group
                                 exists_group_num = check_list[i]
                                 check_list[res.id-1] = exists_group_num
                                 self.group[exists_group_num].extend([self.image_filenames[res.id-1]])
+                            elif check_list[res.id-1] != 0 and check_list[i] == 0:
+                                # exists group
+                                exists_group_num = check_list[res.id-1]
+                                check_list[i] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[i]])
+                            else: # check_list[res.id-1] != 0 and check_list[i] != 0
+                                pass
 
                 if new_group_found:
                     current_group_num += 1
 
 
-        if not self.ngt:
-            num_duplecate_set = 0
-            for _k, img_list in six.iteritems(self.group):
-                if len(img_list) > 1:
-                    num_duplecate_set += 1
-            self.num_duplecate_set = num_duplecate_set
-
-            # write duplicate log file
-            if self.num_duplecate_set > 0 and args.log:
-                now = datetime.now().strftime('%Y%m%d%H%M%S')
-                duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
-                with open(duplicate_log_file, 'w') as f:
-                    for _k, img_list in six.iteritems(self.group):
-                        if len(img_list) > 1:
-                            f.write(" ".join(img_list) + '\n')
-
-        else:
-            self.num_duplecate_set = current_group_num - 1
-
-            # write duplicate log file for ngt
-            if self.num_duplecate_set > 0 and args.log:
-                now = datetime.now().strftime('%Y%m%d%H%M%S')
-                duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
-                with open(duplicate_log_file, 'w') as f:
-                    for _k, img_list in six.iteritems(self.group):
-                        if len(img_list) > 1:
-                            f.write(" ".join(img_list) + '\n')
+        # write duplicate log file
+        self.num_duplecate_set = current_group_num -1
+        if self.num_duplecate_set > 0 and args.log:
+            now = datetime.now().strftime('%Y%m%d%H%M%S')
+            duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
+            with open(duplicate_log_file, 'w') as f:
+                for _k, img_list in six.iteritems(self.group):
+                    if len(img_list) > 1:
+                        f.write(" ".join(img_list) + '\n')
 
 
     def preserve(self, args):
