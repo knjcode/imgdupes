@@ -174,7 +174,6 @@ class ImageDeduper:
                 ngt_index.insert_object(hsh)
             logger.warn("NGT: Building index")
             ngt_index.build_index()
-            ngt_index.save()
             logger.warn("NGT: Indexing complete")
 
             # NGT Approximate neighbor search
@@ -192,7 +191,7 @@ class ImageDeduper:
                         continue
                     else:
                         if res.distance <= self.hamming_distance:
-                            if check_list[res.id-1] == 0:
+                            if check_list[res.id-1] == 0 and check_list[i] == 0:
                                 # new group
                                 new_group_found = True
                                 check_list[i] = current_group_num
@@ -201,9 +200,9 @@ class ImageDeduper:
                                 self.group[current_group_num].extend([self.image_filenames[res.id-1]])
                             else:
                                 # exists group
-                                exists_group_num = check_list[res.id-1]
-                                check_list[i] = exists_group_num
-                                self.group[exists_group_num].extend([self.image_filenames[i]])
+                                exists_group_num = check_list[i]
+                                check_list[res.id-1] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[res.id-1]])
 
                 if new_group_found:
                     current_group_num += 1
