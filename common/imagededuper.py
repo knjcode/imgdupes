@@ -40,9 +40,9 @@ class ImageDeduper:
         self.ngt = args.ngt
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
         if args.ngt:
-            self.hashcache = NgtHashCache(self.image_filenames, self.hash_method)
+            self.hashcache = NgtHashCache(self.image_filenames, self.hash_method, args.num_hash_proc)
         else:
-            self.hashcache = HashCache(self.image_filenames, self.hash_method)
+            self.hashcache = HashCache(self.image_filenames, self.hash_method, args.num_hash_proc)
         self.group = {}
         self.num_duplecate_set = 0
 
@@ -123,6 +123,7 @@ class ImageDeduper:
             self.load_hashcache()
 
         if not args.ngt:
+            logger.warn("Searching similar images")
             hshs = self.hashcache.hshs()
             check_list = [0] * len(hshs)
             current_group_num = 1

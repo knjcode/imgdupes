@@ -3,7 +3,7 @@
 ![video_capture](video_capture.gif)
 Images by [Caltech 101] dataset that semi-deduped for demonstration.
 
-`imgdupes` is a command line tool for finding and deleting duplicate image files based on perceptual hash.  
+`imgdupes` is a command line tool for finding and deleting duplicate and/or similar image files based on perceptual hash.  
 You can delete duplicate image files with an operation similar to the [`fdupes`] command.  
 It is better to pre-deduplicate identical files with [`fdupes`] in advance.
 
@@ -67,13 +67,17 @@ You can use the same hash method as [ImageHash] library.
 
 # Options
 
-`-r` `--recursive` (default `False`)
+`-r` `--recursive`
 
-search images recursively from the target directory
+search images recursively from the target directory (default=False)
 
-`-c` `--imgcat` (default=False)
+`-c` `--imgcat`
 
-display duplicate images for iTerm2
+display duplicate images for iTerm2 (default=False)
+
+`--num-hash-proc`
+
+number of hash calculation processes (default=cpu_count-1)
 
 `--ngt`
 
