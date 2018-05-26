@@ -83,6 +83,14 @@ def main(argv=sys.argv[1:]):
         help="number of hash calculation processes (default=cpu_count-1)")
     parser.add_argument("--ngt", action="store_true",
         help="use NGT for calculating Hamming distance between hash of images")
+    parser.add_argument("--ngt-k", type=int, default=20,
+        help="""number of searched objects when using NGT.
+            Increasing this value, improves accuracy and increases computation time.
+            (default=20)""")
+    parser.add_argument("--ngt-epsilon", type=float, default=0.1,
+        help="""search range when using NGT.
+            Increasing this value, improves accuracy and increases computation time.
+            (default=0.1)""")
     parser.add_argument("--log", action="store_true",
         help="output logs of duplicate and delete files")
     parser.add_argument("--cache", action="store_true",

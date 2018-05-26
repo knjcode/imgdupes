@@ -83,6 +83,16 @@ number of hash calculation processes (default=cpu_count-1)
 
 use NGT for calculating Hamming distance between hash of images (default=False)
 
+`--ngt-k`
+
+number of searched objects when using NGT.
+Increasing this value, improves accuracy and increases computation time. (default=20)
+
+`--ngt-epsilon`
+
+search range when using NGT.
+Increasing this value, improves accuracy and increases computation time. (default=0.1)
+
 `--log`
 
 output logs of duplicate and delete files (default=False)
