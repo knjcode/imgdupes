@@ -85,6 +85,8 @@ def main(argv=sys.argv[1:]):
         help="use NGT for calculating Hamming distance between hash of images")
     parser.add_argument("--log", action="store_true",
         help="output logs of duplicate and delete files")
+    parser.add_argument("--cache", action="store_true",
+        help="create and use image hash cache")
     parser.add_argument("--size", type=str, default="256x256",
         help="resize image (default=256x256)")
     parser.add_argument("--space", type=int, default=0,
@@ -99,8 +101,6 @@ def main(argv=sys.argv[1:]):
         help="do not keep aspect when displaying imagest")
     parser.add_argument("--no-subdir-warning", dest="print_warning", action="store_false",
         help="stop warnings that appear when similar images are in different subdirectories")
-    parser.add_argument("--no-cache", dest="cache", action="store_false",
-        help="do not create image hash cache")
     parser.add_argument("--dry-run", dest="run", action="store_false",
         help="dry run (do not delete any files)")
     args = parser.parse_args()
