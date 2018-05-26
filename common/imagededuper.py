@@ -56,7 +56,7 @@ class ImageDeduper:
         if self.ngt:
             return "hash_cache_ngt_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
         else:
-            return "hash_cache_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
+            return "hash_cache_std_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
 
 
     def get_duplicate_log_name(self):
