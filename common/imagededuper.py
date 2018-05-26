@@ -212,6 +212,10 @@ class ImageDeduper:
                 if new_group_found:
                     current_group_num += 1
 
+            # remove ngt index
+            if index_path:
+                os.system("rm -rf {}".format(index_path))
+
 
         # write duplicate log file
         self.num_duplecate_set = current_group_num -1
