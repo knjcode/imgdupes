@@ -29,14 +29,6 @@ class NgtHashCache:
         self.hashfunc = self.gen_hashfunc(hash_method)
         self.num_hash_proc = num_hash_proc
         self.cache = []
-        if load_path and Path(load_path).exists():
-            self.cache = joblib.load(load_path)
-            if len(image_filenames) == len(self.cache):
-                logger.debug("Load hash cache: {}".format(load_path))
-            else:
-                self.cache = [[2] * 64 for i in range(len(self.image_filenames))]
-        else:
-            self.cache = [[2] * 64 for i in range(len(self.image_filenames))]
 
 
     def __len__(self):
@@ -63,11 +55,6 @@ class NgtHashCache:
         except:
             hsh = [2] * 64
         return hsh
-
-
-    def chunk(self, seq, chunk_size):
-        for i in range(0, len(seq), chunk_size):
-            yield seq[i:i+chunk_size]
 
 
     def make_hash_list(self):
@@ -103,8 +90,8 @@ class NgtHashCache:
         return hashfunc
 
 
-    def load(self, load_path):
-        if load_path and Path(load_path).exists():
+    def load(self, load_path, use_cache):
+        if load_path and Path(load_path).exists() and use_cache:
             self.cache = joblib.load(load_path)
             if len(self.image_filenames) == len(self.cache):
                 logger.debug("Load hash cache: {}".format(load_path))
@@ -116,6 +103,7 @@ class NgtHashCache:
             self.make_hash_list()
 
 
-    def dump(self, dump_path):
-        joblib.dump(self.cache, dump_path, protocol=2, compress=True)
-        logger.debug("Dump hash cache: {}".format(dump_path))
+    def dump(self, dump_path, use_cache):
+        if use_cache:
+            joblib.dump(self.cache, dump_path, protocol=2, compress=True)
+            logger.debug("Dump hash cache: {}".format(dump_path))

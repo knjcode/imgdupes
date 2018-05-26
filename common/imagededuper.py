@@ -37,6 +37,7 @@ class ImageDeduper:
         self.image_filenames = image_filenames
         self.hash_method = args.hash_method
         self.hamming_distance = args.hamming_distance
+        self.cache = args.cache
         self.ngt = args.ngt
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
         if args.ngt:
@@ -78,11 +79,11 @@ class ImageDeduper:
 
 
     def load_hashcache(self):
-        self.hashcache.load(self.get_hashcache_dump_name())
+        self.hashcache.load(self.get_hashcache_dump_name(), self.cache)
 
 
     def dump_hashcache(self):
-        self.hashcache.dump(self.get_hashcache_dump_name())
+        self.hashcache.dump(self.get_hashcache_dump_name(), self.cache)
 
 
     def preserve_file_question(self, file_num):
@@ -119,10 +120,10 @@ class ImageDeduper:
 
 
     def dedupe(self, args):
-        if args.cache:
-            self.load_hashcache()
+        self.load_hashcache()
+        self.dump_hashcache()
 
-        if not args.ngt:
+        if not self.ngt:
             logger.warn("Searching similar images")
             hshs = self.hashcache.hshs()
             check_list = [0] * len(hshs)
@@ -193,30 +194,22 @@ class ImageDeduper:
                         if res.distance <= self.hamming_distance:
                             if check_list[res.id-1] == 0:
                                 # new group
+                                new_group_found = True
                                 check_list[i] = current_group_num
                                 check_list[res.id-1] = current_group_num
-                                new_group_found = True
+                                self.group[current_group_num] = [self.image_filenames[i]]
+                                self.group[current_group_num].extend([self.image_filenames[res.id-1]])
                             else:
                                 # exists group
-                                check_list[i] = check_list[res.id-1]
+                                exists_group_num = check_list[res.id-1]
+                                check_list[i] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[i]])
 
                 if new_group_found:
                     current_group_num += 1
 
-            # update self.group
-            for i in range(1,current_group_num):
-                current_img_list = []
-                for j in range(len(hshs)):
-                    if check_list[j] == i:
-                        current_img_list.append(self.image_filenames[j])
-                self.group[i] = current_img_list
 
-
-        # dump hash cache
-        if args.cache:
-            self.dump_hashcache()
-
-        if not args.ngt:
+        if not self.ngt:
             num_duplecate_set = 0
             for _k, img_list in six.iteritems(self.group):
                 if len(img_list) > 1:

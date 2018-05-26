@@ -81,11 +81,15 @@ number of hash calculation processes (default=cpu_count-1)
 
 `--ngt`
 
-use NGT for calculating Hamming distance between hash of images"
+use NGT for calculating Hamming distance between hash of images (default=False)
 
 `--log`
 
-output logs of duplicate and delete files
+output logs of duplicate and delete files (default=False)
+
+`--cache`
+
+create and use image hash cache (default=False)
 
 `--size 256x256`
 
@@ -110,10 +114,6 @@ do not keep aspect when displaying images
 `--no-subdir-warning`
 
 stop warnings that appear when similar images are in different subdirectories
-
-`--no-cache`
-
-do not create image hash cache
 
 `--dry-run`
 
