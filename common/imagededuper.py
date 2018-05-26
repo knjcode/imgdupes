@@ -193,24 +193,19 @@ class ImageDeduper:
                         if res.distance <= self.hamming_distance:
                             if check_list[res.id-1] == 0:
                                 # new group
+                                new_group_found = True
                                 check_list[i] = current_group_num
                                 check_list[res.id-1] = current_group_num
-                                new_group_found = True
+                                self.group[current_group_num] = [self.image_filenames[i]]
+                                self.group[current_group_num].extend([self.image_filenames[res.id-1]])
                             else:
                                 # exists group
-                                check_list[i] = check_list[res.id-1]
+                                exists_group_num = check_list[res.id-1]
+                                check_list[i] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[i]])
 
                 if new_group_found:
                     current_group_num += 1
-
-            # update self.group
-            for i in range(1,current_group_num):
-                current_img_list = []
-                for j in range(len(hshs)):
-                    if check_list[j] == i:
-                        current_img_list.append(self.image_filenames[j])
-                self.group[i] = current_img_list
-
 
         # dump hash cache
         if args.cache:
