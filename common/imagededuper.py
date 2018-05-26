@@ -186,7 +186,7 @@ class ImageDeduper:
                 if check_list[i] != 0:
                     # already grouped image
                     continue
-                for res in ngt_index.search(hshs[i], k=20, epsilon=0.1):
+                for res in ngt_index.search(hshs[i], k=args.ngt_k, epsilon=args.ngt_epsilon):
                     if res.id-1 == i:
                         continue
                     else:
