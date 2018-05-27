@@ -1,0 +1,5 @@
+imgdupes:
+  image: knjcode/imgdupes
+  container_name: "imgdupes"
+  volumes:
+    - "$PWD:/app"

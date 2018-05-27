@@ -1,8 +1,13 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 import setuptools
+
+version = open("VERSION").read().strip()
 
 setuptools.setup(
     name="imgdupes",
-    version="0.0.9",
+    version=version,
     author="Kenji Doi",
     author_email="knjcode@gmail.com",
     description="CLI tool to dedupe images based on perceptual hash",
