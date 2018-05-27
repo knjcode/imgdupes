@@ -18,10 +18,8 @@ from common.imagededuper import ImageDeduper
 import sys
 
 
-img_file_ext = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.gif', '.GIF']
-
-
 def is_image(path):
+    img_file_ext = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.gif', '.GIF']
     return path.suffix in img_file_ext
 
 
@@ -44,18 +42,10 @@ def gen_image_filenames(target_dir, recursive):
 def dedupe_images(args):
     target_dir = args.target_dir
     recursive = args.recursive
-
     try:
         deduper = ImageDeduper(args, gen_image_filenames(target_dir, recursive))
         deduper.dedupe(args)
-        delete_candidate = deduper.preserve(args)
-
-        if args.run:
-            deduper.delete_images(delete_candidate)
-            logger.debug("deleted: {}".format(delete_candidate))
-        else:
-            logger.debug("dry-run")
-            logger.debug("delete_candidate: {}".format(delete_candidate))
+        deduper.preserve(args)
     except KeyboardInterrupt:
         sys.exit(1)
 

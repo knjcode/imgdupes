@@ -229,7 +229,7 @@ class ImageDeduper:
 
 
     def preserve(self, args):
-        delete_candidate = []
+        deleted_filenames = []
 
         current_set = 0
         for _k, img_list in six.iteritems(self.group):
@@ -270,28 +270,30 @@ class ImageDeduper:
                     if i in delete_list:
                         delete_file = sorted_img_list[i-1]
                         print("   [-] {}".format(delete_file))
-                        delete_candidate.append(delete_file)
+                        if args.run:
+                            self.delete_image(delete_file)
+                        deleted_filenames.append(delete_file)
                     else:
                         preserve_file = sorted_img_list[i-1]
                         print("   [+] {}".format(preserve_file))
                 print("")
 
         # write delete log file
-        if len(delete_candidate) > 0 and args.log:
+        if len(deleted_filenames) >0 and  args.run and args.log:
             now = datetime.now().strftime('%Y%m%d%H%M%S')
             delete_log_file = "{}_{}".format(now, self.get_delete_log_name())
             with open(delete_log_file, 'w') as f:
-                for del_file in delete_candidate:
+                for del_file in deleted_filenames:
                     f.write("{}\n".format(del_file))
 
-        return delete_candidate
+        if not args.run:
+            logger.debug("dry-run")
+            logger.debug("delete_candidate: {}".format(deleted_filenames))
 
 
-    def delete_images(self, delete_candidate):
-        for filename in delete_candidate:
-            try:
-                os.remove(filename)
-                logger.error("Deleted: {}".format(filename))
-            except FileNotFoundError as e:
-                logger.debug(e)
-                pass
+    def delete_image(self, delete_file):
+        try:
+            os.remove(delete_file)
+        except FileNotFoundError as e:
+            logger.error(e)
+            pass
