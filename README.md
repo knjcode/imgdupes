@@ -29,7 +29,9 @@ Find a set of images with Hamming distance of phash less than 4.
 (To search images recursively from the target directory, add `-r` or `--recursive` option.)
 
 ```bash
-$ imgdupes --recursive target_dir phash 4
+$ imgdupes --recursive --delete target_dir phash 4
+# in short option
+$ imgupdes -rd target_dir phash 4
 ```
 
 The set of images are sorted in ascending order of file size and displayed together with the pixel size of the image, you choose which image to preserve.
@@ -37,7 +39,9 @@ The set of images are sorted in ascending order of file size and displayed toget
 If you are using iTerm 2, you can display a set of images on the terminal with the `-c` or `--imgcat` option.
 
 ```bash
-$ imgdupes --recursive --imgcat 101_ObjectCategories phash 4
+$ imgdupes --recursive --imgcat --delete 101_ObjectCategories phash 4
+# in short option
+$ imgdupes -rcd 101_ObjectCategories phash 4
 ```
 
 
@@ -48,7 +52,7 @@ $ imgdupes --recursive --imgcat 101_ObjectCategories phash 4
 To dedupe images using NGT, run with `--ngt` option after installing NGT and python binding.
 
 ```bash
-$ imgdupes --recursive --imgcat --ngt 101_ObjectCategories phash 4
+$ imgdupes -rcd --ngt 101_ObjectCategories phash 4
 ```
 
 For instructions on installing NGT and python binding, see [NGT] and [python NGT].
@@ -65,7 +69,7 @@ Clone imgdupes repository in advance and copy target directoris into imgdupes di
 $ git clone https://github.com/knjcode/imgdupes
 $ cd imgdupes
 $ cp -r <target_dir> .
-$ docker-compose run imgdupes -rc --ngt <target_dir> phash 4
+$ docker-compose run imgdupes -rcd --ngt <target_dir> phash 4
 ```
 
 When docker-compose is executed, current directory is mounted inside the container and referenced from imgdupes.
@@ -91,6 +95,10 @@ search images recursively from the target directory (default=False)
 `-c` `--imgcat`
 
 display duplicate images for iTerm2 (default=False)
+
+`-d` `--delete`
+
+prompt user for files to preserve and delete (default=False)
 
 `--num-hash-proc`
 

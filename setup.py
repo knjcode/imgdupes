@@ -23,6 +23,7 @@ setuptools.setup(
         'joblib',
         'opencv-python',
         'pathlib',
+        'pathos',
         'Pillow',
         'six',
         'termcolor',

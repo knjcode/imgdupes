@@ -225,7 +225,13 @@ class ImageDeduper:
             with open(duplicate_log_file, 'w') as f:
                 for _k, img_list in six.iteritems(self.group):
                     if len(img_list) > 1:
-                        f.write(" ".join(img_list) + '\n')
+                        f.write("\n".join(img_list) + '\n')
+
+
+    def print_duplicates(self, args):
+        for _k, img_list in six.iteritems(self.group):
+            if len(img_list) > 1:
+                print("\n".join(img_list) + "\n")
 
 
     def preserve(self, args):
