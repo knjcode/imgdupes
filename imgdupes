@@ -56,10 +56,10 @@ def main(argv=sys.argv[1:]):
         description="finding and deleting duplicate image files based on perceptual hash")
     parser.add_argument("target_dir", type=str)
     parser.add_argument("hash_method", type=str,
-        choices=['ahash', 'phash', 'dhash', 'whash-haar', 'whash-db4'],
+        choices=['ahash', 'phash', 'dhash', 'whash'],
         help="""method of perceptual hashing.
             ahash(Average hash) phash(Perceptual hash) dhash(Difference hash)
-            whash-haar(Haar wavelet hash) whash-db4(Daubechies wavelet hash)""")
+            whash(Haar wavelet hash)""")
     parser.add_argument("hamming_distance", type=int,
         help="allowable Hamming distances.")
     # parser.add_argument("--preserve_largest", type=str,

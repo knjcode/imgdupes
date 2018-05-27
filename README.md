@@ -76,10 +76,10 @@ When docker-compose is executed, current directory is mounted inside the contain
 `imgdupes` uses the [ImageHash] to calculate perceptual hash.
 You can use the same hash method as [ImageHash] library.
 
-- [aHash]: average hashing
-- [pHash]: perception hashing
-- [dHash]: difference hashing
-- [wHash]: wavelet hashing
+- [ahash]: average hashing
+- [phash]: perception hashing
+- [dhash]: difference hashing
+- [whash]: wavelet hashing
 
 
 # Options
@@ -154,9 +154,9 @@ MIT
 [`fdupes`]: (https://github.com/adrianlopezroche/fdupes)
 [Caltech 101]: http://www.vision.caltech.edu/Image_Datasets/Caltech101/
 [ImageHash]: https://github.com/JohannesBuchner/imagehash
-[aHash]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
-[pHash]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
-[dHash]: http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
-[wHash]: https://fullstackml.com/2016/07/02/wavelet-image-hash-in-python/
+[ahash]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
+[phash]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
+[dhash]: http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
+[whash]: https://fullstackml.com/2016/07/02/wavelet-image-hash-in-python/
 [NGT]: https://github.com/yahoojapan/NGT
 [python NGT]: https://github.com/yahoojapan/NGT/tree/master/python

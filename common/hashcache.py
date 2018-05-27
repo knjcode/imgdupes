@@ -77,10 +77,8 @@ class HashCache:
             hashfunc = imagehash.phash
         elif hash_method == 'dhash':
             hashfunc = imagehash.dhash
-        elif hash_method == 'whash-haar':
+        elif hash_method == 'whash':
             hashfunc = imagehash.whash
-        elif hash_method == 'whash-db4':
-            hashfunc = lambda img: imagehash.whash(img, mode='db4')
         return hashfunc
 
 
