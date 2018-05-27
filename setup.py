@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name="imgdupes",
-    version="0.0.8",
+    version="0.0.9",
     author="Kenji Doi",
     author_email="knjcode@gmail.com",
     description="CLI tool to dedupe images based on perceptual hash",
