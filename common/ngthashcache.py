@@ -10,6 +10,7 @@ logger.addHandler(handler)
 logger.propagate = False
 
 
+from pathos.multiprocessing import ProcessPool
 from multiprocessing import Pool, cpu_count
 from pathlib import Path
 from PIL import Image
@@ -68,7 +69,7 @@ class NgtHashCache:
         try:
             spinner = Spinner(prefix="Calculating image hashes for NGT...")
             spinner.start()
-            with Pool(self.num_hash_proc) as pool:
+            with ProcessPool(self.num_hash_proc) as pool:
                 self.cache = pool.map(self.gen_hash, self.image_filenames)
             spinner.stop()
         except KeyboardInterrupt:

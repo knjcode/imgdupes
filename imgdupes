@@ -45,7 +45,11 @@ def dedupe_images(args):
     try:
         deduper = ImageDeduper(args, gen_image_filenames(target_dir, recursive))
         deduper.dedupe(args)
-        deduper.preserve(args)
+
+        if args.delete:
+            deduper.preserve(args)
+        else:
+            deduper.print_duplicates(args)
     except KeyboardInterrupt:
         sys.exit(1)
 
@@ -67,6 +71,8 @@ def main(argv=sys.argv[1:]):
     #     help="preserve the larget filesize or pixelsize image from duplicate images")
     parser.add_argument("-r", "--recursive", action="store_true", default=False,
         help="search images recursively from the target directory")
+    parser.add_argument("-d", "--delete", action="store_true",
+        help="prompt user for files to preserve and delete")
     parser.add_argument("-c", "--imgcat", action="store_true",
         help="display duplicate images for iTerm2")
     parser.add_argument("--num-hash-proc", type=int, default=None,
