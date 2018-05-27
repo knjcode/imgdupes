@@ -54,6 +54,23 @@ $ imgdupes --recursive --imgcat --ngt 101_ObjectCategories phash 4
 For instructions on installing NGT and python binding, see [NGT] and [python NGT].
 
 
+# Using docker containers with imgdupes
+
+You can use `imgdupes` using a pre-build docker container.
+[NGT] and [python NGT] is already installed in this container.
+
+Clone imgdupes repository in advance and copy target directoris into imgdupes directory.
+
+```
+$ git clone https://github.com/knjcode/imgdupes
+$ cd imgdupes
+$ cp -r <target_dir> .
+$ docker-compose run imgdupes -rc --ngt <target_dir> phash 4
+```
+
+When docker-compose is executed, current directory is mounted inside the container and referenced from imgdupes.
+
+
 # Available hash algorithm
 
 `imgdupes` uses the [ImageHash] to calculate perceptual hash.
