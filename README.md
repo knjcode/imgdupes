@@ -25,24 +25,28 @@ $ pip install imgdupes
 
 # Usage
 
-Find a set of images with Hamming distance of phash less than 4.
-(To search images recursively from the target directory, add `-r` or `--recursive` option.)
+Find a set of images with Hamming distance of phash less than 4.  
+To search images recursively from the target directory, add `-r` or `--recursive` option.
 
 ```bash
-$ imgdupes --recursive --delete target_dir phash 4
-# in short option
-$ imgupdes -rd target_dir phash 4
+$ imgdupes --recursive images phash 4
+images/airplane_0583.jpg
+images/airplane_0800.jpg
+
+images/watch_0122.jpg
+images/watch_0121.jpg
 ```
 
-The set of images are sorted in ascending order of file size and displayed together with the pixel size of the image, you choose which image to preserve.
+By default, imgdupes displays a list of duplicate images and exits.
+To display the image preserve or delete prompt, use the `-d` or `--delete` option
 
 If you are using iTerm 2, you can display a set of images on the terminal with the `-c` or `--imgcat` option.
 
 ```bash
-$ imgdupes --recursive --imgcat --delete 101_ObjectCategories phash 4
-# in short option
-$ imgdupes -rcd 101_ObjectCategories phash 4
+$ imgdupes --recursive --delete --imgcat 101_ObjectCategories phash 4
 ```
+
+The set of images are sorted in ascending order of file size and displayed together with the pixel size of the image, you choose which image to preserve.
 
 
 # Against large dataset
@@ -52,7 +56,7 @@ $ imgdupes -rcd 101_ObjectCategories phash 4
 To dedupe images using NGT, run with `--ngt` option after installing NGT and python binding.
 
 ```bash
-$ imgdupes -rcd --ngt 101_ObjectCategories phash 4
+$ imgdupes -rdc --ngt 101_ObjectCategories phash 4
 ```
 
 For instructions on installing NGT and python binding, see [NGT] and [python NGT].
@@ -69,7 +73,7 @@ Clone imgdupes repository in advance and copy target directoris into imgdupes di
 $ git clone https://github.com/knjcode/imgdupes
 $ cd imgdupes
 $ cp -r <target_dir> .
-$ docker-compose run imgdupes -rcd --ngt <target_dir> phash 4
+$ docker-compose run imgdupes -rdc --ngt <target_dir> phash 4
 ```
 
 When docker-compose is executed, current directory is mounted inside the container and referenced from imgdupes.
@@ -92,13 +96,13 @@ You can use the same hash method as [ImageHash] library.
 
 search images recursively from the target directory (default=False)
 
-`-c` `--imgcat`
-
-display duplicate images for iTerm2 (default=False)
-
 `-d` `--delete`
 
 prompt user for files to preserve and delete (default=False)
+
+`-c` `--imgcat`
+
+display duplicate images for iTerm2 (default=False)
 
 `--num-hash-proc`
 
