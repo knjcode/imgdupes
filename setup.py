@@ -3,7 +3,8 @@
 
 import setuptools
 
-version = open("VERSION").read().strip()
+with open("VERSION") as v:
+    version = v.read().strip()
 
 setuptools.setup(
     name="imgdupes",
