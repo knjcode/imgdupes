@@ -99,8 +99,8 @@ def main(argv=sys.argv[1:]):
         help="space color between images (default=black)")
     # parser.add_argument("--interpolation", type=str, default="INTER_LINEAR",
     #     help="interpolation methods")
-    parser.add_argument("--tile-num", type=int, default=8,
-        help="horizontal tile number (default=8)")
+    parser.add_argument("--tile-num", type=int, default=4,
+        help="horizontal tile number (default=4)")
     parser.add_argument("--no-keep-aspect", dest="keep_aspect", action="store_false",
         help="do not keep aspect when displaying imagest")
     parser.add_argument("--no-subdir-warning", dest="print_warning", action="store_false",

@@ -138,9 +138,9 @@ space between images (default=0)
 
 space color between images (default=black)
 
-`--tile-num 8`
+`--tile-num 4`
 
-space color between images (default=black)
+horizontal tile number (default=4)
 
 `--no-keep-aspect`
 
