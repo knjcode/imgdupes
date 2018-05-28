@@ -124,7 +124,7 @@ class ImageDeduper:
         self.dump_hashcache()
 
         if not self.ngt:
-            logger.warn("Searching similar images")
+            logger.warning("Searching similar images")
             hshs = self.hashcache.hshs()
             check_list = [0] * len(hshs)
             current_group_num = 1
@@ -166,16 +166,16 @@ class ImageDeduper:
                 logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
                 sys.exit(1)
             index_path = self.get_ngt_index_path()
-            logger.warn("NGT: Creating NGT index")
+            logger.warning("NGT: Creating NGT index")
             ngt_index = ngt.Index.create(index_path.encode(), 64, object_type="Integer", distance_type="Hamming")
             for hsh in tqdm(self.hashcache.hshs()):
                 ngt_index.insert_object(hsh)
-            logger.warn("NGT: Building index")
+            logger.warning("NGT: Building index")
             ngt_index.build_index()
-            logger.warn("NGT: Indexing complete")
+            logger.warning("NGT: Indexing complete")
 
             # NGT Approximate neighbor search
-            logger.warn("NGT: Approximate neighbor searching")
+            logger.warning("NGT: Approximate neighbor searching")
             hshs = self.hashcache.hshs()
             check_list = [0] * len(hshs)
             current_group_num = 1
@@ -260,8 +260,8 @@ class ImageDeduper:
                 for img in sorted_img_list:
                     parent_set.add(str(Path(img).parent))
                 if len(parent_set) > 1 and args.print_warning:
-                    logger.warn(colored('WARNING! Similar images are stored in different subdirectories.', 'red'))
-                    logger.warn(colored('\n'.join(parent_set), 'red'))
+                    logger.warning(colored('WARNING! Similar images are stored in different subdirectories.', 'red'))
+                    logger.warning(colored('\n'.join(parent_set), 'red'))
 
                 for index, (img, size) in enumerate(sorted_img_size_list, start=1):
                     pixel = img_pixel_dict[img]
