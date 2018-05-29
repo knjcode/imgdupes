@@ -13,6 +13,7 @@ logger.propagate = False
 
 from builtins import input
 from datetime import datetime
+from multiprocessing import cpu_count
 from operator import itemgetter
 from pathlib import Path
 from PIL import Image
@@ -166,12 +167,16 @@ class ImageDeduper:
                 logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
                 sys.exit(1)
             index_path = self.get_ngt_index_path()
+            # check num_ngt_proc
+            if args.num_ngt_proc is None:
+                num_ngt_proc = cpu_count() -1
+            else:
+                num_ngt_proc = args.num_ngt_proc
             logger.warning("NGT: Creating NGT index")
             ngt_index = ngt.Index.create(index_path.encode(), 64, object_type="Integer", distance_type="Hamming")
-            for hsh in tqdm(self.hashcache.hshs()):
-                ngt_index.insert_object(hsh)
+            ngt_index.insert(self.hashcache.hshs(), num_ngt_proc)
             logger.warning("NGT: Building index")
-            ngt_index.build_index()
+            ngt_index.build_index(num_ngt_proc)
             logger.warning("NGT: Indexing complete")
 
             # NGT Approximate neighbor search

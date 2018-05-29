@@ -87,6 +87,8 @@ def main(argv=sys.argv[1:]):
         help="""search range when using NGT.
             Increasing this value, improves accuracy and increases computation time.
             (default=0.1)""")
+    parser.add_argument("--num-ngt-proc", type=int, default=None,
+        help="number of ngt process (default=cpu_count-1)")
     parser.add_argument("--log", action="store_true",
         help="output logs of duplicate and delete files")
     parser.add_argument("--cache", action="store_true",
