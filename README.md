@@ -122,6 +122,10 @@ Increasing this value, improves accuracy and increases computation time. (defaul
 search range when using NGT.
 Increasing this value, improves accuracy and increases computation time. (default=0.1)
 
+`--num-ngt-proc`
+
+number of ngt process (default=cpu_count-1)
+
 `--log`
 
 output logs of duplicate and delete files (default=False)
