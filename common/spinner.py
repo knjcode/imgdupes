@@ -37,5 +37,6 @@ class Spinner:
         self.busy = False
         sys.stdout.write('\r')
         sys.stdout.write(' ' * (self.prefix_len + 1))
+        sys.stdout.write('\r')
         sys.stdout.flush()
         time.sleep(self.delay)
