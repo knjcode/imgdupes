@@ -25,10 +25,10 @@ from common.spinner import Spinner
 
 
 class NgtHashCache:
-    def __init__(self, image_filenames, hash_method, num_hash_proc, load_path=None):
+    def __init__(self, image_filenames, hash_method, num_proc, load_path=None):
         self.image_filenames = image_filenames
         self.hashfunc = self.gen_hashfunc(hash_method)
-        self.num_hash_proc = num_hash_proc
+        self.num_proc = num_proc
         self.cache = []
 
 
@@ -59,17 +59,17 @@ class NgtHashCache:
 
 
     def make_hash_list(self):
-        if self.num_hash_proc is None:
-            self.num_hash_proc = cpu_count() - 1
+        if self.num_proc is None:
+            self.num_proc = cpu_count() - 1
         try:
             from ngt import base as _ngt
         except:
             logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
             sys.exit(1)
         try:
-            spinner = Spinner(prefix="Calculating image hashes for NGT...")
+            spinner = Spinner(prefix="Calculating image hashes for NGT (num_proc={})...".format(self.num_proc))
             spinner.start()
-            with ProcessPool(self.num_hash_proc) as pool:
+            with ProcessPool(self.num_proc) as pool:
                 self.cache = pool.map(self.gen_hash, self.image_filenames)
             spinner.stop()
         except KeyboardInterrupt:

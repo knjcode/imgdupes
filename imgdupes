@@ -75,8 +75,8 @@ def main(argv=sys.argv[1:]):
         help="prompt user for files to preserve and delete")
     parser.add_argument("-c", "--imgcat", action="store_true",
         help="display duplicate images for iTerm2")
-    parser.add_argument("--num-hash-proc", type=int, default=None,
-        help="number of hash calculation processes (default=cpu_count-1)")
+    parser.add_argument("--num-proc", type=int, default=None,
+        help="number of hash calculation and ngt processes (default=cpu_count-1)")
     parser.add_argument("--ngt", action="store_true",
         help="use NGT for calculating Hamming distance between hash of images")
     parser.add_argument("--ngt-k", type=int, default=20,
@@ -87,8 +87,6 @@ def main(argv=sys.argv[1:]):
         help="""search range when using NGT.
             Increasing this value, improves accuracy and increases computation time.
             (default=0.1)""")
-    parser.add_argument("--num-ngt-proc", type=int, default=None,
-        help="number of ngt process (default=cpu_count-1)")
     parser.add_argument("--log", action="store_true",
         help="output logs of duplicate and delete files")
     parser.add_argument("--cache", action="store_true",

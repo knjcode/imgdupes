@@ -104,9 +104,9 @@ prompt user for files to preserve and delete (default=False)
 
 display duplicate images for iTerm2 (default=False)
 
-`--num-hash-proc`
+`--num-proc`
 
-number of hash calculation processes (default=cpu_count-1)
+number of hash calculation and ngt processes (default=cpu_count-1)
 
 `--ngt`
 
@@ -121,10 +121,6 @@ Increasing this value, improves accuracy and increases computation time. (defaul
 
 search range when using NGT.
 Increasing this value, improves accuracy and increases computation time. (default=0.1)
-
-`--num-ngt-proc`
-
-number of ngt process (default=cpu_count-1)
 
 `--log`
 

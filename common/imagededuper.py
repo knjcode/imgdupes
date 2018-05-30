@@ -42,9 +42,9 @@ class ImageDeduper:
         self.ngt = args.ngt
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
         if args.ngt:
-            self.hashcache = NgtHashCache(self.image_filenames, self.hash_method, args.num_hash_proc)
+            self.hashcache = NgtHashCache(self.image_filenames, self.hash_method, args.num_proc)
         else:
-            self.hashcache = HashCache(self.image_filenames, self.hash_method, args.num_hash_proc)
+            self.hashcache = HashCache(self.image_filenames, self.hash_method, args.num_proc)
         self.group = {}
         self.num_duplecate_set = 0
 
@@ -167,16 +167,16 @@ class ImageDeduper:
                 logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
                 sys.exit(1)
             index_path = self.get_ngt_index_path()
-            # check num_ngt_proc
-            if args.num_ngt_proc is None:
-                num_ngt_proc = cpu_count() -1
+            # check num_proc
+            if args.num_proc is None:
+                num_proc = cpu_count() -1
             else:
-                num_ngt_proc = args.num_ngt_proc
-            logger.warning("NGT: Creating NGT index")
+                num_proc = args.num_proc
+            logger.warning("NGT: Creating NGT index (num_proc={})".format(num_proc))
             ngt_index = ngt.Index.create(index_path.encode(), 64, object_type="Integer", distance_type="Hamming")
-            ngt_index.insert(self.hashcache.hshs(), num_ngt_proc)
-            logger.warning("NGT: Building index")
-            ngt_index.build_index(num_ngt_proc)
+            ngt_index.insert(self.hashcache.hshs(), num_proc)
+            logger.warning("NGT: Building index (num_proc={})".format(num_proc))
+            ngt_index.build_index(num_proc)
             logger.warning("NGT: Indexing complete")
 
             # NGT Approximate neighbor search
