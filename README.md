@@ -1,9 +1,10 @@
 # imgdupes
 
+`imgdupes` is a command line tool for finding and deleting duplicate and/or similar image files based on perceptual hash.
+
 ![video_capture](video_capture.gif)
 Images by [Caltech 101] dataset that semi-deduped for demonstration.
 
-`imgdupes` is a command line tool for finding and deleting duplicate and/or similar image files based on perceptual hash.  
 You can delete duplicate image files with an operation similar to the [`fdupes`] command.  
 It is better to pre-deduplicate identical files with [`fdupes`] in advance.
 
@@ -11,7 +12,7 @@ It is better to pre-deduplicate identical files with [`fdupes`] in advance.
 ## For large dataset
 
 It is possible to speed up dedupe process by approximate nearest neighbor search of hamming distance with [NGT].
-See [Against large dataset](#Against_large_dataset) section for details.
+See [Against large dataset](#against-large-dataset) section for details.
 
 
 # Install
@@ -25,20 +26,20 @@ $ pip install imgdupes
 
 # Usage
 
-Find a set of images with Hamming distance of phash less than 4.  
+Find a set of images with Hamming distance of phash less than 4 from target directory.  
 To search images recursively from the target directory, add `-r` or `--recursive` option.
 
 ```bash
-$ imgdupes --recursive images phash 4
-images/airplane_0583.jpg
-images/airplane_0800.jpg
+$ imgdupes --recursive <target_dir> phash 4
+target_dir/airplane_0583.jpg
+target_dir/airplane_0800.jpg
 
-images/watch_0122.jpg
-images/watch_0121.jpg
+target_dir/watch_0122.jpg
+target_dir/watch_0121.jpg
 ```
 
-By default, imgdupes displays a list of duplicate images and exits.
-To display the image preserve or delete prompt, use the `-d` or `--delete` option
+By default, imgdupes displays a list of duplicate images list and exits.  
+To display preserve or delete images prompt, use the `-d` or `--delete` option.
 
 If you are using iTerm 2, you can display a set of images on the terminal with the `-c` or `--imgcat` option.
 
@@ -62,21 +63,33 @@ $ imgdupes -rdc --ngt 101_ObjectCategories phash 4
 For instructions on installing NGT and python binding, see [NGT] and [python NGT].
 
 
-# Using docker containers with imgdupes
+# Using imgdupes without installing it with docker
 
-You can use `imgdupes` using a pre-build docker container.
-[NGT] and [python NGT] is already installed in this container.
+You can use `imgdupes` without installing it using a pre-build docker container image.  
+[NGT] and [python NGT] are already installed in this image.
 
-Clone imgdupes repository in advance and copy target directoris into imgdupes directory.
+Place the target directory in the current directory and execute the following command.
 
-```
-$ git clone https://github.com/knjcode/imgdupes
-$ cd imgdupes
-$ cp -r <target_dir> .
-$ docker-compose run imgdupes -rdc --ngt <target_dir> phash 4
+```bash
+$ docker run -it -v $PWD:/app knjcode/imgdupes -rdc --ngt <target_dir> phash 0
 ```
 
-When docker-compose is executed, current directory is mounted inside the container and referenced from imgdupes.
+When docker run, current directory is mounted inside the container and referenced from imgdupes.
+
+
+By aliasing the command, you can use `imgdupes` as installed.
+
+```bash
+$ alias imgdupes="docker run -it -v $PWD:/app knjcode/imgdupes"
+$ imgdupes -rdc --ngt <target_dir> phash 0
+```
+
+
+To upgrade imgdupes docker image, you can pull the docker image as below.
+
+```bash
+$ docker pull knjcode/imgdupes
+```
 
 
 # Available hash algorithm
