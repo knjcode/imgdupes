@@ -83,20 +83,36 @@ class HashCache:
         return hashfunc
 
 
-    def load(self, load_path, use_cache):
+    def check_mtime(self, path):
+        return Path(path).stat().st_mtime
+
+
+    def check_latest_dir_mtime(self, path):
+        return max([p.stat().st_mtime for p in Path(path).glob('**')])
+
+
+    def load(self, load_path, use_cache, target_dir):
         if load_path and Path(load_path).exists() and use_cache:
-            self.cache = joblib.load(load_path)
-            if len(self.image_filenames) == len(self.cache):
+            cache_mtime = self.check_mtime(load_path)
+            target_mtime = self.check_latest_dir_mtime(target_dir)
+            if cache_mtime > target_mtime:
                 logger.debug("Load hash cache: {}".format(load_path))
+                self.cache = joblib.load(load_path)
+                return True
             else:
                 self.cache = []
                 self.make_hash_list()
+                return False
         else:
             self.cache = []
             self.make_hash_list()
+            return False
 
 
     def dump(self, dump_path, use_cache):
         if use_cache:
             joblib.dump(self.cache, dump_path, protocol=2, compress=True)
             logger.debug("Dump hash cache: {}".format(dump_path))
+            return True
+        else:
+            return False

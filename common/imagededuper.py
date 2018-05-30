@@ -80,11 +80,11 @@ class ImageDeduper:
 
 
     def load_hashcache(self):
-        self.hashcache.load(self.get_hashcache_dump_name(), self.cache)
+        return self.hashcache.load(self.get_hashcache_dump_name(), self.cache, self.target_dir)
 
 
     def dump_hashcache(self):
-        self.hashcache.dump(self.get_hashcache_dump_name(), self.cache)
+        return self.hashcache.dump(self.get_hashcache_dump_name(), self.cache)
 
 
     def preserve_file_question(self, file_num):
@@ -121,8 +121,8 @@ class ImageDeduper:
 
 
     def dedupe(self, args):
-        self.load_hashcache()
-        self.dump_hashcache()
+        if not self.load_hashcache():
+            self.dump_hashcache()
 
         if not self.ngt:
             logger.warning("Searching similar images")
