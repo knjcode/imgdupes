@@ -92,7 +92,7 @@ class ImageDeduper:
         delete_all = {"none":True, "no": True, "n": True}
         file_num_set = set([i for i in range(1,file_num+1)])
         prompt = "preserve files [1 - {}, all, none]: ".format(file_num)
-        error_prompt = "Please respond with comma-separated file numbers or 'all' or 'n'.\n"
+        error_prompt = "Please respond with comma-separated file numbers or all (a) or none (n).\n"
 
         # return list of delete files index
         while True:
