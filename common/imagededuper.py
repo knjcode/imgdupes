@@ -172,15 +172,13 @@ class ImageDeduper:
                 num_proc = cpu_count() -1
             else:
                 num_proc = args.num_proc
-            logger.warning("NGT: Creating NGT index (num_proc={})".format(num_proc))
+            logger.warning("Building NGT index (num_proc={})".format(num_proc))
             ngt_index = ngt.Index.create(index_path.encode(), 64, object_type="Integer", distance_type="Hamming")
             ngt_index.insert(self.hashcache.hshs(), num_proc)
-            logger.warning("NGT: Building index (num_proc={})".format(num_proc))
             ngt_index.build_index(num_proc)
-            logger.warning("NGT: Indexing complete")
 
             # NGT Approximate neighbor search
-            logger.warning("NGT: Approximate neighbor searching")
+            logger.warning("Approximate neighbor searching using NGT")
             hshs = self.hashcache.hshs()
             check_list = [0] * len(hshs)
             current_group_num = 1
