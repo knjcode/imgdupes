@@ -98,7 +98,7 @@ def create_tile_img(filename_list, args):
 
 
 def imgcat_for_iTerm2(imgdata):
-    flag, buf = cv2.imencode('.png', imgdata)
+    _flag, buf = cv2.imencode('.png', imgdata)
     if os.environ['TERM'].startswith('screen'):
         osc = b'\033Ptmux;\033\033]1337;File='
         st = b'\a\033\\\n'
@@ -107,4 +107,5 @@ def imgcat_for_iTerm2(imgdata):
         st = b'\a\n'
     stdout.write(b'%ssize=%d;inline=1:%s%s' %
                 (osc, len(buf), b64encode(buf), st))
+    sys.stdout.flush()
 
