@@ -159,6 +159,12 @@ space color between images (default=black)
 
 horizontal tile number (default=4)
 
+`--interpolation INTER_LINEAR`
+
+interpolation methods (default=INTER_LINEAR)
+
+You can specify OpenCV interpolation methods: INTER_NEAREST, INTER_LINEAR, INTER_AREA, INTER_CUBIC, INTER_LANCZOS4, etc.
+
 `--no-keep-aspect`
 
 do not keep aspect when displaying images

@@ -73,7 +73,7 @@ def create_tile_img(filename_list, args):
     # interpolation = getattr(cv2, args.interpolation, 1)
     space = args.space
     tile_num = args.tile_num
-    interpolation = 1
+    interpolation = getattr(cv2, args.interpolation, 1)
     resize_x, resize_y = int(args.size.split('x')[0]), int(args.size.split('x')[1])
     image_list = []
     for filename in filename_list:
