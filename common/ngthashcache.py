@@ -67,7 +67,7 @@ class NgtHashCache:
             logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
             sys.exit(1)
         try:
-            spinner = Spinner(prefix="Calculating image hashes for NGT (num_proc={})...".format(self.num_proc))
+            spinner = Spinner(prefix="Calculating image hashes (num_proc={})...".format(self.num_proc))
             spinner.start()
             with ProcessPool(self.num_proc) as pool:
                 self.cache = pool.map(self.gen_hash, self.image_filenames)

@@ -22,6 +22,11 @@ RUN git clone https://github.com/yahoojapan/NGT.git \
   && python setup.py sdist \
   && pip install dist/ngt-1.1.0.tar.gz
 
+RUN git clone https://github.com/nmslib/hnsw.git \
+  && cd hnsw/python_bindings \
+  && pip install numpy \
+  && python setup.py install
+
 RUN pip install imgdupes
 
 ENTRYPOINT ["imgdupes"]

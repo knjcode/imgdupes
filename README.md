@@ -11,7 +11,7 @@ It is better to pre-deduplicate identical files with [`fdupes`] in advance.
 
 ## For large dataset
 
-It is possible to speed up dedupe process by approximate nearest neighbor search of hamming distance with [NGT].
+It is possible to speed up dedupe process by approximate nearest neighbor search of hamming distance with [NGT] or [hnsw].
 See [Against large dataset](#against-large-dataset) section for details.
 
 
@@ -52,7 +52,7 @@ The set of images are sorted in ascending order of file size and displayed toget
 
 # Against large dataset
 
-`imgdupes` supports approximate nearest neighbor search of hamming distance with [NGT].
+`imgdupes` supports approximate nearest neighbor search of hamming distance with [NGT] or [hnsw].
 
 To dedupe images using NGT, run with `--ngt` option after installing NGT and python binding.
 
@@ -62,11 +62,17 @@ $ imgdupes -rdc --ngt 101_ObjectCategories phash 4
 
 For instructions on installing NGT and python binding, see [NGT] and [python NGT].
 
+To dedupe images using hnsw, run with `--hnsw` option after installing hnsw python binding.
+
+```bash
+$ imgdupes -rdc --hnsw 101_ObjectCategories phash 4
+```
+
 
 # Using imgdupes without installing it with docker
 
 You can use `imgdupes` without installing it using a pre-build docker container image.  
-[NGT] and [python NGT] are already installed in this image.
+[NGT] and [hnsw] are already installed in this image.
 
 Place the target directory in the current directory and execute the following command.
 
@@ -81,7 +87,7 @@ By aliasing the command, you can use `imgdupes` as installed.
 
 ```bash
 $ alias imgdupes="docker run -it -v $PWD:/app knjcode/imgdupes"
-$ imgdupes -rdc --ngt <target_dir> phash 0
+$ imgdupes -rdc --hnsw <target_dir> phash 0
 ```
 
 
@@ -120,20 +126,6 @@ display duplicate images for iTerm2 (default=False)
 `--num-proc`
 
 number of hash calculation and ngt processes (default=cpu_count-1)
-
-`--ngt`
-
-use NGT for calculating Hamming distance between hash of images (default=False)
-
-`--ngt-k`
-
-number of searched objects when using NGT.
-Increasing this value, improves accuracy and increases computation time. (default=20)
-
-`--ngt-epsilon`
-
-search range when using NGT.
-Increasing this value, improves accuracy and increases computation time. (default=0.1)
 
 `--log`
 
@@ -178,6 +170,43 @@ stop warnings that appear when similar images are in different subdirectories
 dry run (do not delete any files)
 
 
+## ngt options
+
+`--ngt`
+
+use NGT for calculating Hamming distance between hash of images (default=False)
+
+`--ngt-k`
+
+number of searched objects when using NGT.
+Increasing this value, improves accuracy and increases computation time. (default=20)
+
+`--ngt-epsilon`
+
+search range when using NGT.
+Increasing this value, improves accuracy and increases computation time. (default=0.1)
+
+
+## hnsw options
+
+`--hnsw`
+
+use hnsw for calculating Hamming distance between hash of images (default=False)
+
+`--hnsw-k`
+
+number of searched objects when using hnsw.
+Increasing this value, improves accuracy and increases computation time. (default=20)
+
+`--hnsw-ef-construction`
+
+controls index search speed/build speed tradeoff (default=100)
+
+`--hnsw-m`
+
+m is tightly connected with internal dimensionality of the data stronlgy affects the memory consumption (default=16)
+
+
 # License
 
 MIT
@@ -191,3 +220,4 @@ MIT
 [whash]: https://fullstackml.com/2016/07/02/wavelet-image-hash-in-python/
 [NGT]: https://github.com/yahoojapan/NGT
 [python NGT]: https://github.com/yahoojapan/NGT/tree/master/python
+[hnsw]: https://github.com/nmslib/hnsw

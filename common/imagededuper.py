@@ -25,6 +25,7 @@ import os
 import re
 import six
 import sys
+import numpy as np
 
 from common.imgcatutil import imgcat_for_iTerm2, create_tile_img
 from common.hashcache import HashCache
@@ -40,8 +41,9 @@ class ImageDeduper:
         self.hamming_distance = args.hamming_distance
         self.cache = args.cache
         self.ngt = args.ngt
+        self.hnsw = args.hnsw
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
-        if args.ngt:
+        if args.ngt or args.hnsw:
             self.hashcache = NgtHashCache(self.image_filenames, self.hash_method, args.num_proc)
         else:
             self.hashcache = HashCache(self.image_filenames, self.hash_method, args.num_proc)
@@ -55,8 +57,8 @@ class ImageDeduper:
 
 
     def get_hashcache_dump_name(self):
-        if self.ngt:
-            return "hash_cache_ngt_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
+        if self.ngt or self.hnsw:
+            return "hash_cache_knn_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
         else:
             return "hash_cache_std_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
 
@@ -64,6 +66,8 @@ class ImageDeduper:
     def get_duplicate_log_name(self):
         if self.ngt:
             return "dup_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        elif self.hnsw:
+            return "dup_hnsw_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
         else:
             return "dup_std_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
 
@@ -71,6 +75,8 @@ class ImageDeduper:
     def get_delete_log_name(self):
         if self.ngt:
             return "del_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        elif self.hnsw:
+            return "del_hnsw_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
         else:
             return "del_std_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
 
@@ -124,42 +130,7 @@ class ImageDeduper:
         if not self.load_hashcache():
             self.dump_hashcache()
 
-        if not self.ngt:
-            logger.warning("Searching similar images")
-            hshs = self.hashcache.hshs()
-            check_list = [0] * len(hshs)
-            current_group_num = 1
-            for i in tqdm(range(len(hshs))):
-                new_group_found = False
-                hshi = self.hashcache.get(i)
-                for j in range(i+1, len(hshs)):
-                    hshj = self.hashcache.get(j)
-                    if (hshi - hshj) <= self.hamming_distance:
-                        if check_list[j] == 0 and check_list[i] == 0:
-                            # new group
-                            new_group_found = True
-                            check_list[i] = current_group_num
-                            check_list[j] = current_group_num
-                            self.group[current_group_num] = [self.image_filenames[i]]
-                            self.group[current_group_num].extend([self.image_filenames[j]])
-                        elif check_list[j] == 0 and check_list[i] != 0:
-                            # exists group
-                            exists_group_num = check_list[i]
-                            check_list[j] = exists_group_num
-                            self.group[exists_group_num].extend([self.image_filenames[j]])
-                        elif check_list[j] != 0 and check_list[i] == 0:
-                            # exists group
-                            exists_group_num = check_list[j]
-                            check_list[i] = exists_group_num
-                            self.group[exists_group_num].extend([self.image_filenames[i]])
-                        else: # check_list[j] != 0 and check_list[i] != 0
-                            pass
-
-                if new_group_found:
-                    current_group_num += 1
-
-
-        else:
+        if self.ngt:
             # NGT
             try:
                 from ngt import base as ngt
@@ -218,6 +189,101 @@ class ImageDeduper:
             # remove ngt index
             if index_path:
                 os.system("rm -rf {}".format(index_path))
+
+
+        elif self.hnsw:
+            # hnsw
+            try:
+                import hnswlib
+            except:
+                logger.error(colored("Error: Unable to load hnsw. Please install hnsw python binding first.", 'red'))
+                sys.exit(1)
+            hshs = self.hashcache.hshs()
+            num_elements = len(hshs)
+            hshs_labels = np.arange(num_elements)
+            hnsw_index = hnswlib.Index(space='l2', dim=64) # Squared L2
+            hnsw_index.init_index(max_elements=num_elements, ef_construction=args.hnsw_ef_construction, M=args.hnsw_m)
+            hnsw_index.set_ef(50) # ef should always be > k
+            if args.num_proc is None:
+                num_proc = cpu_count() -1
+            else:
+                num_proc = args.num_proc
+            hnsw_index.set_num_threads(num_proc)
+            logger.warning("Building hnsw index (num_proc={})".format(num_proc))
+            hnsw_index.add_items(hshs, hshs_labels, num_proc)
+
+            # hnsw Approximate neighbor search
+            logger.warning("Approximate neighbor searching using hnsw")
+            check_list = [0] * num_elements
+            current_group_num = 1
+            for i in tqdm(range(num_elements)):
+                new_group_found = False
+                if check_list[i] != 0:
+                    # already grouped image
+                    continue
+                labels, distances = hnsw_index.knn_query(hshs[i], k=args.hnsw_k, num_threads=num_proc)
+                for label, distance in zip(labels[0], distances[0]):
+                    if label == i:
+                        continue
+                    else:
+                        if distance <= self.hamming_distance:
+                            if check_list[label] == 0 and check_list[i] == 0:
+                                # new group
+                                new_group_found = True
+                                check_list[i] = current_group_num
+                                check_list[label] = current_group_num
+                                self.group[current_group_num] = [self.image_filenames[i]]
+                                self.group[current_group_num].extend([self.image_filenames[label]])
+                            elif check_list[label] == 0 and check_list[i] != 0:
+                                # exists group
+                                exists_group_num = check_list[i]
+                                check_list[label] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[label]])
+                            elif check_list[label] != 0 and check_list[i] == 0:
+                                # exists group
+                                exists_group_num = check_list[label]
+                                check_list[i] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[i]])
+                            else: # check_list[label] != 0 and check_list[i] != 0
+                                pass
+
+                if new_group_found:
+                    current_group_num += 1
+
+
+        else:
+            logger.warning("Searching similar images")
+            hshs = self.hashcache.hshs()
+            check_list = [0] * len(hshs)
+            current_group_num = 1
+            for i in tqdm(range(len(hshs))):
+                new_group_found = False
+                hshi = self.hashcache.get(i)
+                for j in range(i+1, len(hshs)):
+                    hshj = self.hashcache.get(j)
+                    if (hshi - hshj) <= self.hamming_distance:
+                        if check_list[j] == 0 and check_list[i] == 0:
+                            # new group
+                            new_group_found = True
+                            check_list[i] = current_group_num
+                            check_list[j] = current_group_num
+                            self.group[current_group_num] = [self.image_filenames[i]]
+                            self.group[current_group_num].extend([self.image_filenames[j]])
+                        elif check_list[j] == 0 and check_list[i] != 0:
+                            # exists group
+                            exists_group_num = check_list[i]
+                            check_list[j] = exists_group_num
+                            self.group[exists_group_num].extend([self.image_filenames[j]])
+                        elif check_list[j] != 0 and check_list[i] == 0:
+                            # exists group
+                            exists_group_num = check_list[j]
+                            check_list[i] = exists_group_num
+                            self.group[exists_group_num].extend([self.image_filenames[i]])
+                        else: # check_list[j] != 0 and check_list[i] != 0
+                            pass
+
+                if new_group_found:
+                    current_group_num += 1
 
 
         # write duplicate log file
