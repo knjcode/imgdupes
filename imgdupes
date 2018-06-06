@@ -77,16 +77,6 @@ def main(argv=sys.argv[1:]):
         help="display duplicate images for iTerm2")
     parser.add_argument("--num-proc", type=int, default=None,
         help="number of hash calculation and ngt processes (default=cpu_count-1)")
-    parser.add_argument("--ngt", action="store_true",
-        help="use NGT for calculating Hamming distance between hash of images")
-    parser.add_argument("--ngt-k", type=int, default=20,
-        help="""number of searched objects when using NGT.
-            Increasing this value, improves accuracy and increases computation time.
-            (default=20)""")
-    parser.add_argument("--ngt-epsilon", type=float, default=0.1,
-        help="""search range when using NGT.
-            Increasing this value, improves accuracy and increases computation time.
-            (default=0.1)""")
     parser.add_argument("--log", action="store_true",
         help="output logs of duplicate and delete files")
     parser.add_argument("--cache", action="store_true",
@@ -107,6 +97,27 @@ def main(argv=sys.argv[1:]):
         help="stop warnings that appear when similar images are in different subdirectories")
     parser.add_argument("--dry-run", dest="run", action="store_false",
         help="dry run (do not delete any files)")
+    parser.add_argument("--ngt", action="store_true",
+        help="use NGT for calculating Hamming distance between hash of images")
+    parser.add_argument("--ngt-k", type=int, default=20,
+        help="""number of searched objects when using NGT.
+            Increasing this value, improves accuracy and increases computation time.
+            (default=20)""")
+    parser.add_argument("--ngt-epsilon", type=float, default=0.1,
+        help="""search range when using NGT.
+            Increasing this value, improves accuracy and increases computation time.
+            (default=0.1)""")
+    parser.add_argument("--hnsw", action="store_true",
+        help="use hnsw for calculating Hamming distance between hash of images")
+    parser.add_argument("--hnsw-k", type=int, default=20,
+        help="""number of searched objects when using hnsw.
+            Increasing this value, improves accuracy and increases computation time.
+            (default=20)""")
+    parser.add_argument("--hnsw-ef-construction", type=int, default=100,
+        help="controls index search speed/build speed tradeoff (default=100)")
+    parser.add_argument("--hnsw-m", type=int, default=16,
+        help="""m is tightly connected with internal dimensionality of the data
+            stronlgy affects the memory consumption (default=16)""")
     args = parser.parse_args()
     dedupe_images(args)
 
