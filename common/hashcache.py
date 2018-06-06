@@ -97,7 +97,10 @@ class HashCache:
             target_mtime = self.check_latest_dir_mtime(target_dir)
             if cache_mtime > target_mtime:
                 logger.debug("Load hash cache: {}".format(load_path))
+                spinner = Spinner(prefix="Loading hash cache...")
+                spinner.start()
                 self.cache = joblib.load(load_path)
+                spinner.stop()
                 return True
             else:
                 self.cache = []
