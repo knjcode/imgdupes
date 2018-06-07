@@ -118,6 +118,8 @@ def main(argv=sys.argv[1:]):
     parser.add_argument("--hnsw-m", type=int, default=16,
         help="""m is tightly connected with internal dimensionality of the data
             stronlgy affects the memory consumption (default=16)""")
+    parser.add_argument("--hnsw-ef", type=int, default=50,
+        help="controls recall. higher ef leads to better accuracy, but slower search (default=50)")
     args = parser.parse_args()
     dedupe_images(args)
 
