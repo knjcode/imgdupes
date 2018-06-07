@@ -206,6 +206,10 @@ controls index search speed/build speed tradeoff (default=100)
 
 m is tightly connected with internal dimensionality of the data stronlgy affects the memory consumption (default=16)
 
+`--hnsw-ef`
+
+controls recall. higher ef leads to better accuracy, but slower search (default=50)
+
 
 # License
 

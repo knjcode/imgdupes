@@ -203,7 +203,7 @@ class ImageDeduper:
             hshs_labels = np.arange(num_elements)
             hnsw_index = hnswlib.Index(space='l2', dim=64) # Squared L2
             hnsw_index.init_index(max_elements=num_elements, ef_construction=args.hnsw_ef_construction, M=args.hnsw_m)
-            hnsw_index.set_ef(50) # ef should always be > k
+            hnsw_index.set_ef(max(args.hnsw_ef, args.hnsw_k - 1)) # ef should always be > k
             if args.num_proc is None:
                 num_proc = cpu_count() -1
             else:
