@@ -24,8 +24,9 @@ import sys
 from common.spinner import Spinner
 
 
-class NgtHashCache:
-    def __init__(self, image_filenames, hash_method, num_proc, load_path=None):
+class KnnHashCache:
+    def __init__(self, args, image_filenames, hash_method, num_proc, load_path=None):
+        self.args = args
         self.image_filenames = image_filenames
         self.hashfunc = self.gen_hashfunc(hash_method)
         self.num_proc = num_proc
@@ -58,14 +59,29 @@ class NgtHashCache:
         return hsh
 
 
+    def package_check(self):
+        if self.args.ngt:
+            try:
+                from ngt import base as _ngt
+            except:
+                logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
+                sys.exit(1)
+        elif self.args.hnsw:
+            try:
+                import hnswlib as _hnswlib
+            except:
+                logger.error(colored("Error: Unable to load hnsw. Please install hnsw python binding first.", 'red'))
+                sys.exit(1)
+        else:
+            pass
+
+
     def make_hash_list(self):
         if self.num_proc is None:
             self.num_proc = cpu_count() - 1
-        try:
-            from ngt import base as _ngt
-        except:
-            logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
-            sys.exit(1)
+
+        self.package_check()
+
         try:
             spinner = Spinner(prefix="Calculating image hashes (num_proc={})...".format(self.num_proc))
             spinner.start()

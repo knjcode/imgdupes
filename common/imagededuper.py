@@ -29,7 +29,7 @@ import numpy as np
 
 from common.imgcatutil import imgcat_for_iTerm2, create_tile_img
 from common.hashcache import HashCache
-from common.ngthashcache import NgtHashCache
+from common.knnhashcache import KnnHashCache
 
 
 class ImageDeduper:
@@ -44,7 +44,7 @@ class ImageDeduper:
         self.hnsw = args.hnsw
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
         if args.ngt or args.hnsw:
-            self.hashcache = NgtHashCache(self.image_filenames, self.hash_method, args.num_proc)
+            self.hashcache = KnnHashCache(args, self.image_filenames, self.hash_method, args.num_proc)
         else:
             self.hashcache = HashCache(self.image_filenames, self.hash_method, args.num_proc)
         self.group = {}
