@@ -36,6 +36,7 @@ class ImageDeduper:
     def __init__(self, args, image_filenames):
         self.target_dir = args.target_dir
         self.recursive = args.recursive
+        self.sort = args.sort
         self.image_filenames = image_filenames
         self.hash_method = args.hash_method
         self.hamming_distance = args.hamming_distance
@@ -300,7 +301,39 @@ class ImageDeduper:
     def print_duplicates(self, args):
         for _k, img_list in six.iteritems(self.group):
             if len(img_list) > 1:
-                print("\n".join(img_list) + "\n")
+                if self.sort:
+                    img_filesize_dict = {}
+                    img_size_dict = {}
+                    img_width_dict = {}
+                    img_height_dict = {}
+                    for img in img_list:
+                        img_filesize_dict[img] = os.path.getsize(img)
+                        with Image.open(img) as current_img:
+                            width, height = current_img.size
+                            img_size_dict[img] = width + height
+                            img_width_dict[img] = width
+                            img_height_dict[img] = height
+                    rev = not args.reverse
+                    if self.sort == 'filesize':
+                        sorted_filesize_dict = sorted(img_filesize_dict.items(), key=itemgetter(1), reverse=rev)
+                        sorted_img_list = [img for img, _ in sorted_filesize_dict]
+                    elif self.sort == 'filepath':
+                        sorted_img_list = sorted(img_list, reverse=(not rev))
+                    elif self.sort == 'imagesize':
+                        sorted_imagesize_dict = sorted(img_size_dict.items(), key=itemgetter(1), reverse=rev)
+                        sorted_img_list = [img for img, _ in sorted_imagesize_dict]
+                    elif self.sort == 'width':
+                        sorted_width_dict = sorted(img_width_dict.items(), key=itemgetter(1), reverse=rev)
+                        sorted_img_list = [img for img, _ in sorted_width_dict]
+                    elif self.sort == 'height':
+                        sorted_height_dict = sorted(img_height_dict.items(), key=itemgetter(1), reverse=rev)
+                        sorted_img_list = [img for img, _ in sorted_height_dict]
+                    else:
+                        sorted_img_list = img_list
+                else:
+                    sorted_img_list = img_list
+
+                print("\n".join(sorted_img_list) + "\n")
 
 
     def preserve(self, args):
@@ -311,15 +344,37 @@ class ImageDeduper:
             if len(img_list) > 1:
                 current_set += 1
 
-                img_size_dict = {}
-                img_pixel_dict = {}
-                for img in img_list:
-                    img_size_dict[img] = os.path.getsize(img)
-                    with Image.open(img) as current_img:
-                        width, height = current_img.size
-                        img_pixel_dict[img] = "{}x{}".format(width, height)
-                sorted_img_size_list = sorted(img_size_dict.items(), key=itemgetter(1), reverse=True)
-                sorted_img_list = [img for img, size in sorted_img_size_list]
+                if self.sort:
+                    img_filesize_dict = {}
+                    img_size_dict = {}
+                    img_width_dict = {}
+                    img_height_dict = {}
+                    for img in img_list:
+                        img_filesize_dict[img] = os.path.getsize(img)
+                        with Image.open(img) as current_img:
+                            width, height = current_img.size
+                            img_size_dict[img] = width + height
+                            img_width_dict[img] = width
+                            img_height_dict[img] = height
+                    rev = not args.reverse
+                    if self.sort == 'filesize':
+                        sorted_filesize_dict = sorted(img_filesize_dict.items(), key=itemgetter(1), reverse=rev)
+                        sorted_img_list = [img for img, _ in sorted_filesize_dict]
+                    elif self.sort == 'filepath':
+                        sorted_img_list = sorted(img_list, reverse=(not rev))
+                    elif self.sort == 'imagesize':
+                        sorted_imagesize_dict = sorted(img_size_dict.items(), key=itemgetter(1), reverse=rev)
+                        sorted_img_list = [img for img, _ in sorted_imagesize_dict]
+                    elif self.sort == 'width':
+                        sorted_width_dict = sorted(img_width_dict.items(), key=itemgetter(1), reverse=rev)
+                        sorted_img_list = [img for img, _ in sorted_width_dict]
+                    elif self.sort == 'height':
+                        sorted_height_dict = sorted(img_height_dict.items(), key=itemgetter(1), reverse=rev)
+                        sorted_img_list = [img for img, _ in sorted_height_dict]
+                    else:
+                        sorted_img_list = img_list
+                else:
+                    sorted_img_list = img_list
 
                 if args.imgcat:
                     imgcat_for_iTerm2(create_tile_img(sorted_img_list, args))
@@ -332,9 +387,12 @@ class ImageDeduper:
                     logger.warning(colored('WARNING! Similar images are stored in different subdirectories.', 'red'))
                     logger.warning(colored('\n'.join(parent_set), 'red'))
 
-                for index, (img, size) in enumerate(sorted_img_size_list, start=1):
-                    pixel = img_pixel_dict[img]
-                    print("[{}] {:>8.2f} kbyte {:>9} {}".format(index, (size/1024), pixel, img))
+                for index, img in enumerate(sorted_img_list, start=1):
+                    filesize = img_filesize_dict[img]
+                    width = img_width_dict[img]
+                    height = img_height_dict[img]
+                    pixel = "{}x{}".format(width, height)
+                    print("[{}] {:>8.2f} kbyte {:>9} {}".format(index, (filesize/1024), pixel, img))
                 print("")
                 print("Set {} of {}, ".format(current_set, self.num_duplecate_set), end='')
                 delete_list = self.preserve_file_question(len(sorted_img_list))

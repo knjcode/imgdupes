@@ -123,6 +123,22 @@ prompt user for files to preserve and delete (default=False)
 
 display duplicate images for iTerm2 (default=False)
 
+`--sort`
+
+how to sort duplicate image files (default=filesize)
+
+You can specify following types:
+
+- `filesize`: sort by filesize in descending order
+- `filepath`: sort by filepath in ascending order
+- `imagesize`: sort by pixel width and height in descenging order
+- `width`: sort by pixel width in descending order
+- `height`: sort by pixel height in descending order
+
+`--reverse`
+
+reverse sort order
+
 `--num-proc`
 
 number of hash calculation and ngt processes (default=cpu_count-1)

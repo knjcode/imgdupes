@@ -75,6 +75,11 @@ def main(argv=sys.argv[1:]):
         help="prompt user for files to preserve and delete")
     parser.add_argument("-c", "--imgcat", action="store_true",
         help="display duplicate images for iTerm2")
+    parser.add_argument("--sort", type=str,
+        choices=['filesize', 'filepath', 'imagesize', 'width', 'height'],
+        help="how to sort duplicate image files (default=filesize)")
+    parser.add_argument("--reverse", action="store_true",
+        help="reverse order while sorting")
     parser.add_argument("--num-proc", type=int, default=None,
         help="number of hash calculation and ngt processes (default=cpu_count-1)")
     parser.add_argument("--log", action="store_true",
