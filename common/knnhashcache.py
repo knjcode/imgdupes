@@ -10,7 +10,6 @@ logger.addHandler(handler)
 logger.propagate = False
 
 
-from pathos.multiprocessing import ProcessPool
 from multiprocessing import cpu_count
 from pathlib import Path
 from PIL import Image
@@ -20,6 +19,7 @@ from tqdm import tqdm
 import imagehash
 import joblib
 import sys
+import six
 
 from common.spinner import Spinner
 
@@ -85,10 +85,16 @@ class KnnHashCache:
         try:
             spinner = Spinner(prefix="Calculating image hashes (num_proc={})...".format(self.num_proc))
             spinner.start()
-            with ProcessPool(self.num_proc) as pool:
-                self.cache = pool.map(self.gen_hash, self.image_filenames)
+            if six.PY2:
+                from pathos.multiprocessing import ProcessPool as Pool
+            elif six.PY3:
+                from multiprocessing import Pool
+            pool = Pool(self.num_proc)
+            self.cache = pool.map(self.gen_hash, self.image_filenames)
             spinner.stop()
         except KeyboardInterrupt:
+            pool.terminate()
+            pool.join()
             spinner.stop()
             sys.exit(1)
 
