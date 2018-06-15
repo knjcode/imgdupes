@@ -37,6 +37,7 @@ class ImageDeduper:
         self.target_dir = args.target_dir
         self.recursive = args.recursive
         self.sort = args.sort
+        self.reverse = args.reverse
         self.image_filenames = image_filenames
         self.hash_method = args.hash_method
         self.hamming_distance = args.hamming_distance
@@ -298,84 +299,56 @@ class ImageDeduper:
                         f.write("\n".join(img_list) + '\n')
 
 
+    def sort_image_list(self, img_list):
+        rev = not self.reverse
+        img_filesize_dict = {}
+        img_size_dict = {}
+        img_width_dict = {}
+        img_height_dict = {}
+        for img in img_list:
+            img_filesize_dict[img] = os.path.getsize(img)
+            with Image.open(img) as current_img:
+                width, height = current_img.size
+                img_size_dict[img] = width + height
+                img_width_dict[img] = width
+                img_height_dict[img] = height
+        if self.sort:
+            if self.sort == 'filesize':
+                sorted_filesize_dict = sorted(img_filesize_dict.items(), key=itemgetter(1), reverse=rev)
+                sorted_img_list = [img for img, _ in sorted_filesize_dict]
+            elif self.sort == 'filepath':
+                sorted_img_list = sorted(img_list, reverse=(not rev))
+            elif self.sort == 'imagesize':
+                sorted_imagesize_dict = sorted(img_size_dict.items(), key=itemgetter(1), reverse=rev)
+                sorted_img_list = [img for img, _ in sorted_imagesize_dict]
+            elif self.sort == 'width':
+                sorted_width_dict = sorted(img_width_dict.items(), key=itemgetter(1), reverse=rev)
+                sorted_img_list = [img for img, _ in sorted_width_dict]
+            elif self.sort == 'height':
+                sorted_height_dict = sorted(img_height_dict.items(), key=itemgetter(1), reverse=rev)
+                sorted_img_list = [img for img, _ in sorted_height_dict]
+        else:
+            # sort by filesize
+            sorted_filesize_dict = sorted(img_filesize_dict.items(), key=itemgetter(1), reverse=rev)
+            sorted_img_list = [img for img, _ in sorted_filesize_dict]
+
+        return sorted_img_list, img_filesize_dict, img_width_dict, img_height_dict
+
+
     def print_duplicates(self, args):
         for _k, img_list in six.iteritems(self.group):
             if len(img_list) > 1:
-                if self.sort:
-                    img_filesize_dict = {}
-                    img_size_dict = {}
-                    img_width_dict = {}
-                    img_height_dict = {}
-                    for img in img_list:
-                        img_filesize_dict[img] = os.path.getsize(img)
-                        with Image.open(img) as current_img:
-                            width, height = current_img.size
-                            img_size_dict[img] = width + height
-                            img_width_dict[img] = width
-                            img_height_dict[img] = height
-                    rev = not args.reverse
-                    if self.sort == 'filesize':
-                        sorted_filesize_dict = sorted(img_filesize_dict.items(), key=itemgetter(1), reverse=rev)
-                        sorted_img_list = [img for img, _ in sorted_filesize_dict]
-                    elif self.sort == 'filepath':
-                        sorted_img_list = sorted(img_list, reverse=(not rev))
-                    elif self.sort == 'imagesize':
-                        sorted_imagesize_dict = sorted(img_size_dict.items(), key=itemgetter(1), reverse=rev)
-                        sorted_img_list = [img for img, _ in sorted_imagesize_dict]
-                    elif self.sort == 'width':
-                        sorted_width_dict = sorted(img_width_dict.items(), key=itemgetter(1), reverse=rev)
-                        sorted_img_list = [img for img, _ in sorted_width_dict]
-                    elif self.sort == 'height':
-                        sorted_height_dict = sorted(img_height_dict.items(), key=itemgetter(1), reverse=rev)
-                        sorted_img_list = [img for img, _ in sorted_height_dict]
-                    else:
-                        sorted_img_list = img_list
-                else:
-                    sorted_img_list = img_list
-
+                sorted_img_list, _, _, _ = self.sort_image_list(img_list)
                 print("\n".join(sorted_img_list) + "\n")
 
 
     def preserve(self, args):
         deleted_filenames = []
-
         current_set = 0
         for _k, img_list in six.iteritems(self.group):
             if len(img_list) > 1:
                 current_set += 1
-
-                if self.sort:
-                    img_filesize_dict = {}
-                    img_size_dict = {}
-                    img_width_dict = {}
-                    img_height_dict = {}
-                    for img in img_list:
-                        img_filesize_dict[img] = os.path.getsize(img)
-                        with Image.open(img) as current_img:
-                            width, height = current_img.size
-                            img_size_dict[img] = width + height
-                            img_width_dict[img] = width
-                            img_height_dict[img] = height
-                    rev = not args.reverse
-                    if self.sort == 'filesize':
-                        sorted_filesize_dict = sorted(img_filesize_dict.items(), key=itemgetter(1), reverse=rev)
-                        sorted_img_list = [img for img, _ in sorted_filesize_dict]
-                    elif self.sort == 'filepath':
-                        sorted_img_list = sorted(img_list, reverse=(not rev))
-                    elif self.sort == 'imagesize':
-                        sorted_imagesize_dict = sorted(img_size_dict.items(), key=itemgetter(1), reverse=rev)
-                        sorted_img_list = [img for img, _ in sorted_imagesize_dict]
-                    elif self.sort == 'width':
-                        sorted_width_dict = sorted(img_width_dict.items(), key=itemgetter(1), reverse=rev)
-                        sorted_img_list = [img for img, _ in sorted_width_dict]
-                    elif self.sort == 'height':
-                        sorted_height_dict = sorted(img_height_dict.items(), key=itemgetter(1), reverse=rev)
-                        sorted_img_list = [img for img, _ in sorted_height_dict]
-                    else:
-                        sorted_img_list = img_list
-                else:
-                    sorted_img_list = img_list
-
+                sorted_img_list, img_filesize_dict, img_width_dict, img_height_dict = self.sort_image_list(img_list)
                 if args.imgcat:
                     imgcat_for_iTerm2(create_tile_img(sorted_img_list, args))
 
