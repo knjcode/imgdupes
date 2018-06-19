@@ -44,8 +44,9 @@ class ImageDeduper:
         self.cache = args.cache
         self.ngt = args.ngt
         self.hnsw = args.hnsw
+        self.faiss_flat = args.faiss_flat
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
-        if args.ngt or args.hnsw:
+        if args.ngt or args.hnsw or args.faiss_flat:
             self.hashcache = KnnHashCache(args, self.image_filenames, self.hash_method, args.num_proc)
         else:
             self.hashcache = HashCache(self.image_filenames, self.hash_method, args.num_proc)
@@ -59,7 +60,7 @@ class ImageDeduper:
 
 
     def get_hashcache_dump_name(self):
-        if self.ngt or self.hnsw:
+        if self.ngt or self.hnsw or self.faiss_flat:
             return "hash_cache_knn_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
         else:
             return "hash_cache_std_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
@@ -70,6 +71,8 @@ class ImageDeduper:
             return "dup_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
         elif self.hnsw:
             return "dup_hnsw_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        elif self.faiss_flat:
+            return "dup_faiss_flat_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
         else:
             return "dup_std_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
 
@@ -79,6 +82,8 @@ class ImageDeduper:
             return "del_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
         elif self.hnsw:
             return "del_hnsw_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        elif self.faiss_flat:
+            return "del_faiss_flat_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
         else:
             return "del_std_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
 
@@ -132,6 +137,12 @@ class ImageDeduper:
         if not self.load_hashcache():
             self.dump_hashcache()
 
+        # check num_proc
+        if args.num_proc is None:
+            num_proc = max(cpu_count() - 1, 1)
+        else:
+            num_proc = args.num_proc
+
         if self.ngt:
             # NGT
             try:
@@ -140,11 +151,6 @@ class ImageDeduper:
                 logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
                 sys.exit(1)
             index_path = self.get_ngt_index_path()
-            # check num_proc
-            if args.num_proc is None:
-                num_proc = cpu_count() -1
-            else:
-                num_proc = args.num_proc
             logger.warning("Building NGT index (num_proc={})".format(num_proc))
             ngt_index = ngt.Index.create(index_path.encode(), 64, object_type="Integer", distance_type="Hamming")
             ngt_index.insert(self.hashcache.hshs(), num_proc)
@@ -206,10 +212,6 @@ class ImageDeduper:
             hnsw_index = hnswlib.Index(space='l2', dim=64) # Squared L2
             hnsw_index.init_index(max_elements=num_elements, ef_construction=args.hnsw_ef_construction, M=args.hnsw_m)
             hnsw_index.set_ef(max(args.hnsw_ef, args.hnsw_k - 1)) # ef should always be > k
-            if args.num_proc is None:
-                num_proc = cpu_count() -1
-            else:
-                num_proc = args.num_proc
             hnsw_index.set_num_threads(num_proc)
             logger.warning("Building hnsw index (num_proc={})".format(num_proc))
             hnsw_index.add_items(hshs, hshs_labels, num_proc)
@@ -224,6 +226,58 @@ class ImageDeduper:
                     # already grouped image
                     continue
                 labels, distances = hnsw_index.knn_query(hshs[i], k=args.hnsw_k, num_threads=num_proc)
+                for label, distance in zip(labels[0], distances[0]):
+                    if label == i:
+                        continue
+                    else:
+                        if distance <= self.hamming_distance:
+                            if check_list[label] == 0 and check_list[i] == 0:
+                                # new group
+                                new_group_found = True
+                                check_list[i] = current_group_num
+                                check_list[label] = current_group_num
+                                self.group[current_group_num] = [self.image_filenames[i]]
+                                self.group[current_group_num].extend([self.image_filenames[label]])
+                            elif check_list[label] == 0 and check_list[i] != 0:
+                                # exists group
+                                exists_group_num = check_list[i]
+                                check_list[label] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[label]])
+                            elif check_list[label] != 0 and check_list[i] == 0:
+                                # exists group
+                                exists_group_num = check_list[label]
+                                check_list[i] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[i]])
+                            else: # check_list[label] != 0 and check_list[i] != 0
+                                pass
+
+                if new_group_found:
+                    current_group_num += 1
+
+
+        elif self.faiss_flat:
+            try:
+                import faiss
+            except:
+                logger.error(colored("Error: Unable to load faiss. Please install faiss python binding first.", 'red'))
+                sys.exit(1)
+            hshs = self.hashcache.hshs()
+            faiss.omp_set_num_threads(num_proc)
+            logger.warning("Building faiss index (num_proc={})".format(num_proc))
+            data = np.array(hshs).astype('float32')
+            index = faiss.IndexFlatL2(64) # Exact search
+            index.add(data)
+
+            # faiss Exact neighbor search
+            logger.warning("Exact neighbor searching using faiss")
+            check_list = [0] * index.ntotal
+            current_group_num = 1
+            for i in tqdm(range(index.ntotal)):
+                new_group_found = False
+                if check_list[i] != 0:
+                    # already grouped image
+                    continue
+                distances, labels = index.search(data[[i]], 20)
                 for label, distance in zip(labels[0], distances[0]):
                     if label == i:
                         continue
