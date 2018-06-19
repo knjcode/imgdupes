@@ -85,6 +85,8 @@ def main(argv=sys.argv[1:]):
         help="how to sort duplicate image files (default=filesize)")
     parser.add_argument("--reverse", action="store_true",
         help="reverse order while sorting")
+    parser.add_argument("--quiet", action="store_true",
+        help="print as little as possible")
     parser.add_argument("--num-proc", type=int, default=None,
         help="number of hash calculation and ngt processes (default=cpu_count-1)")
     parser.add_argument("--log", action="store_true",

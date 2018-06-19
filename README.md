@@ -157,6 +157,10 @@ You can specify following types:
 
 reverse sort order
 
+`--quiet`
+
+print as little as possible
+
 `--num-proc 4`
 
 number of hash calculation and ngt processes (default=cpu_count-1)
