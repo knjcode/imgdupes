@@ -69,10 +69,21 @@ $ imgdupes -rdc --hnsw 101_ObjectCategories phash 4
 ```
 
 
+# Fast exact searching
+
+`imgdupes` supports exact nearest neighbor search of hamming distance with [faiss] (IndexFlatL2).
+
+To dedupe images using faiss, run with `--faiss-flat` option after installing faiss python binding.
+
+```bash
+$ imgdupes -rdc --faiss-flat 101_ObjectCategories phash 4
+```
+
+
 # Using imgdupes without installing it with docker
 
 You can use `imgdupes` without installing it using a pre-build docker container image.  
-[NGT] and [hnsw] are already installed in this image.
+[NGT], [hnsw] and [faiss] are already installed in this image.
 
 Place the target directory in the current directory and execute the following command.
 
@@ -185,6 +196,10 @@ stop warnings that appear when similar images are in different subdirectories
 
 dry run (do not delete any files)
 
+`--faiss-flat`
+
+use faiss exact search (IndexFlatL2) for calculating Hamming distance between hash of images (default=False)
+
 
 ## ngt options
 
@@ -241,3 +256,4 @@ MIT
 [NGT]: https://github.com/yahoojapan/NGT
 [python NGT]: https://github.com/yahoojapan/NGT/tree/master/python
 [hnsw]: https://github.com/nmslib/hnsw
+[faiss]: https://github.com/facebookresearch/faiss

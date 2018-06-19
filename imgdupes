@@ -102,6 +102,8 @@ def main(argv=sys.argv[1:]):
         help="stop warnings that appear when similar images are in different subdirectories")
     parser.add_argument("--dry-run", dest="run", action="store_false",
         help="dry run (do not delete any files)")
+    parser.add_argument("--faiss-flat", action="store_true",
+        help="use faiss exact search (IndexFlatL2) for calculating Hamming distance between hash of images")
     parser.add_argument("--ngt", action="store_true",
         help="use NGT for calculating Hamming distance between hash of images")
     parser.add_argument("--ngt-k", type=int, default=20,

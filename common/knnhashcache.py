@@ -72,6 +72,12 @@ class KnnHashCache:
             except:
                 logger.error(colored("Error: Unable to load hnsw. Please install hnsw python binding first.", 'red'))
                 sys.exit(1)
+        elif self.args.faiss_flat:
+            try:
+                import faiss as _faiss
+            except:
+                logger.error(colored("Error: Unable to load faiss. Please install faiss python binding first.", 'red'))
+                sys.exit(1)
         else:
             pass
 
