@@ -22,12 +22,12 @@ class Spinner:
 
     def spinner_task(self):
         while self.busy:
-            sys.stdout.write(self.prefix)
-            sys.stdout.write(next(self.spinner_generator))
-            sys.stdout.flush()
+            sys.stderr.write(self.prefix)
+            sys.stderr.write(next(self.spinner_generator))
+            sys.stderr.flush()
             time.sleep(self.delay)
-            sys.stdout.write('\r')
-            sys.stdout.flush()
+            sys.stderr.write('\r')
+            sys.stderr.flush()
 
     def start(self):
         self.busy = True
@@ -35,8 +35,8 @@ class Spinner:
 
     def stop(self):
         self.busy = False
-        sys.stdout.write('\r')
-        sys.stdout.write(' ' * (self.prefix_len + 1))
-        sys.stdout.write('\r')
-        sys.stdout.flush()
+        sys.stderr.write('\r')
+        sys.stderr.write(' ' * (self.prefix_len + 1))
+        sys.stderr.write('\r')
+        sys.stderr.flush()
         time.sleep(self.delay)
