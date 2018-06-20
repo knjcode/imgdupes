@@ -412,7 +412,7 @@ class ImageDeduper:
                 for img in sorted_img_list:
                     parent_set.add(str(Path(img).parent))
                 if len(parent_set) > 1 and args.print_warning:
-                    logger.warning(colored('WARNING! Similar images are stored in different subdirectories.', 'red'))
+                    logger.warning(colored('WARNING! Found similar images in different subdirectories.', 'red'))
                     logger.warning(colored('\n'.join(parent_set), 'red'))
 
                 for index, img in enumerate(sorted_img_list, start=1):
