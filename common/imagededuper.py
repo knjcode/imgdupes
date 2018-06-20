@@ -343,14 +343,15 @@ class ImageDeduper:
 
 
         # write duplicate log file
-        self.num_duplecate_set = current_group_num -1
+        self.num_duplecate_set = current_group_num - 1
         if self.num_duplecate_set > 0 and args.log:
             now = datetime.now().strftime('%Y%m%d%H%M%S')
             duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
             with open(duplicate_log_file, 'w') as f:
                 for _k, img_list in six.iteritems(self.group):
                     if len(img_list) > 1:
-                        f.write("\n".join(img_list) + '\n')
+                        sorted_img_list, _, _, _ = self.sort_image_list(img_list)
+                        f.write("\n".join(sorted_img_list) + "\n\n")
 
 
     def sort_image_list(self, img_list):
