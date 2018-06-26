@@ -25,6 +25,7 @@ import os
 import re
 import six
 import sys
+import math
 import numpy as np
 
 from common.imgcatutil import imgcat_for_iTerm2, create_tile_img
@@ -36,6 +37,7 @@ class ImageDeduper:
     def __init__(self, args, image_filenames):
         self.target_dir = args.target_dir
         self.recursive = args.recursive
+        self.hash_bits = args.hash_bits
         self.sort = args.sort
         self.reverse = args.reverse
         self.image_filenames = image_filenames
@@ -45,11 +47,12 @@ class ImageDeduper:
         self.ngt = args.ngt
         self.hnsw = args.hnsw
         self.faiss_flat = args.faiss_flat
+        self.hash_size = self.get_hash_size()
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
         if args.ngt or args.hnsw or args.faiss_flat:
-            self.hashcache = KnnHashCache(args, self.image_filenames, self.hash_method, args.num_proc)
+            self.hashcache = KnnHashCache(args, self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
         else:
-            self.hashcache = HashCache(self.image_filenames, self.hash_method, args.num_proc)
+            self.hashcache = HashCache(self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
         self.group = {}
         self.num_duplecate_set = 0
 
@@ -61,35 +64,35 @@ class ImageDeduper:
 
     def get_hashcache_dump_name(self):
         if self.ngt or self.hnsw or self.faiss_flat:
-            return "hash_cache_knn_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
+            return "hash_cache_knn_{}_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method, self.hash_bits)
         else:
-            return "hash_cache_std_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method)
+            return "hash_cache_std_{}_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method, self.hash_bits)
 
 
     def get_duplicate_log_name(self):
         if self.ngt:
-            return "dup_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "dup_ngt_{}_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
         elif self.hnsw:
-            return "dup_hnsw_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "dup_hnsw_{}_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
         elif self.faiss_flat:
-            return "dup_faiss_flat_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "dup_faiss_flat_{}_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
         else:
-            return "dup_std_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "dup_std_{}_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
 
 
     def get_delete_log_name(self):
         if self.ngt:
-            return "del_ngt_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "del_ngt_{}_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
         elif self.hnsw:
-            return "del_hnsw_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "del_hnsw_{}_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
         elif self.faiss_flat:
-            return "del_faiss_flat_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "del_faiss_flat_{}_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
         else:
-            return "del_std_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+            return "del_std_{}_{}_{}_{}.log".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
 
 
     def get_ngt_index_path(self):
-        return "ngt_{}_{}_{}.ngt_index".format(self.cleaned_target_dir, self.hash_method, self.hamming_distance)
+        return "ngt_{}_{}_{}_{}.ngt_index".format(self.cleaned_target_dir, self.hash_method, self.hash_bits, self.hamming_distance)
 
 
     def load_hashcache(self):
@@ -98,6 +101,14 @@ class ImageDeduper:
 
     def dump_hashcache(self):
         return self.hashcache.dump(self.get_hashcache_dump_name(), self.cache)
+
+
+    def get_hash_size(self):
+        hash_size = int(math.sqrt(self.hash_bits))
+        if (hash_size ** 2) != self.hash_bits:
+            self.hash_bits = hash_size ** 2
+            logger.warning(colored("hash_bits must be the square of n. Use {} as hash_bits".format(self.hash_bits), 'red'))
+        return hash_size
 
 
     def preserve_file_question(self, file_num):
@@ -151,8 +162,8 @@ class ImageDeduper:
                 logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
                 sys.exit(1)
             index_path = self.get_ngt_index_path()
-            logger.warning("Building NGT index (num_proc={})".format(num_proc))
-            ngt_index = ngt.Index.create(index_path.encode(), 64, object_type="Integer", distance_type="Hamming")
+            logger.warning("Building NGT index (dimension={}, num_proc={})".format(self.hash_bits, num_proc))
+            ngt_index = ngt.Index.create(index_path.encode(), self.hash_bits, object_type="Integer", distance_type="Hamming")
             ngt_index.insert(self.hashcache.hshs(), num_proc)
             ngt_index.build_index(num_proc)
 
@@ -209,11 +220,11 @@ class ImageDeduper:
             hshs = self.hashcache.hshs()
             num_elements = len(hshs)
             hshs_labels = np.arange(num_elements)
-            hnsw_index = hnswlib.Index(space='l2', dim=64) # Squared L2
+            hnsw_index = hnswlib.Index(space='l2', dim=self.hash_bits) # Squared L2
             hnsw_index.init_index(max_elements=num_elements, ef_construction=args.hnsw_ef_construction, M=args.hnsw_m)
             hnsw_index.set_ef(max(args.hnsw_ef, args.hnsw_k - 1)) # ef should always be > k
             hnsw_index.set_num_threads(num_proc)
-            logger.warning("Building hnsw index (num_proc={})".format(num_proc))
+            logger.warning("Building hnsw index (dimension={}, num_proc={})".format(self.hash_bits, num_proc))
             hnsw_index.add_items(hshs, hshs_labels, num_proc)
 
             # hnsw Approximate neighbor search
@@ -263,9 +274,9 @@ class ImageDeduper:
                 sys.exit(1)
             hshs = self.hashcache.hshs()
             faiss.omp_set_num_threads(num_proc)
-            logger.warning("Building faiss index (num_proc={})".format(num_proc))
+            logger.warning("Building faiss index (dimension={}, num_proc={})".format(self.hash_bits, num_proc))
             data = np.array(hshs).astype('float32')
-            index = faiss.IndexFlatL2(64) # Exact search
+            index = faiss.IndexFlatL2(self.hash_bits) # Exact search
             index.add(data)
 
             # faiss Exact neighbor search

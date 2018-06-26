@@ -75,6 +75,11 @@ def main(argv=sys.argv[1:]):
         help="prompt user for files to preserve and delete")
     parser.add_argument("-c", "--imgcat", action="store_true",
         help="display duplicate images for iTerm2")
+    parser.add_argument("--hash-bits", type=int, default=64,
+        help="""bits of perceptual hash.
+            The number of bits specifies the value that is the square of n.
+            For example, you can specify 64(8^2), 144(12^2), 256(16^2)
+            """)
     parser.add_argument("--sort", type=str,
         choices=['filesize', 'filepath', 'imagesize', 'width', 'height'],
         help="how to sort duplicate image files (default=filesize)")
