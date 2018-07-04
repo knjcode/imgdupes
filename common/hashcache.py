@@ -24,9 +24,10 @@ from common.spinner import Spinner
 
 
 class HashCache:
-    def __init__(self, image_filenames, hash_method, num_proc, load_path=None):
+    def __init__(self, image_filenames, hash_method, hash_size, num_proc, load_path=None):
         self.image_filenames = image_filenames
         self.hashfunc = self.gen_hashfunc(hash_method)
+        self.hash_size = hash_size
         self.num_proc = num_proc
         self.cache = []
 
@@ -46,7 +47,7 @@ class HashCache:
     def gen_hash(self, img):
         try:
             with Image.open(img) as i:
-                hsh = self.hashfunc(i)
+                hsh = self.hashfunc(i, hash_size=self.hash_size)
         except:
             hsh = imagehash.hex_to_hash('0x0000000000000000')
         return hsh
@@ -61,7 +62,7 @@ class HashCache:
         if self.num_proc is None:
             self.num_proc = cpu_count() - 1
         try:
-            spinner = Spinner(prefix="Calculating image hashes (num_proc={})...".format(self.num_proc))
+            spinner = Spinner(prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_size ** 2, self.num_proc))
             spinner.start()
             if six.PY2:
                 from pathos.multiprocessing import ProcessPool as Pool

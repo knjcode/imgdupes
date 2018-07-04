@@ -134,7 +134,14 @@ prompt user for files to preserve and delete (default=False)
 
 display duplicate images for iTerm2 (default=False)
 
-`--sort`
+`--hash-bits 64`
+
+bits of perceptual hash (default=64)
+
+The number of bits specifies the value that is the square of n.  
+For example, you can specify 64(8^2), 144(12^2), 256(16^2), etc.
+
+`--sort <sort_type>`
 
 how to sort duplicate image files (default=filesize)
 
@@ -150,7 +157,7 @@ You can specify following types:
 
 reverse sort order
 
-`--num-proc`
+`--num-proc 4`
 
 number of hash calculation and ngt processes (default=cpu_count-1)
 
@@ -207,12 +214,12 @@ use faiss exact search (IndexFlatL2) for calculating Hamming distance between ha
 
 use NGT for calculating Hamming distance between hash of images (default=False)
 
-`--ngt-k`
+`--ngt-k 20`
 
 number of searched objects when using NGT.
 Increasing this value, improves accuracy and increases computation time. (default=20)
 
-`--ngt-epsilon`
+`--ngt-epsilon 0.1`
 
 search range when using NGT.
 Increasing this value, improves accuracy and increases computation time. (default=0.1)
@@ -224,20 +231,20 @@ Increasing this value, improves accuracy and increases computation time. (defaul
 
 use hnsw for calculating Hamming distance between hash of images (default=False)
 
-`--hnsw-k`
+`--hnsw-k 20`
 
 number of searched objects when using hnsw.
 Increasing this value, improves accuracy and increases computation time. (default=20)
 
-`--hnsw-ef-construction`
+`--hnsw-ef-construction 100`
 
 controls index search speed/build speed tradeoff (default=100)
 
-`--hnsw-m`
+`--hnsw-m 16`
 
 m is tightly connected with internal dimensionality of the data stronlgy affects the memory consumption (default=16)
 
-`--hnsw-ef`
+`--hnsw-ef 50`
 
 controls recall. higher ef leads to better accuracy, but slower search (default=50)
 

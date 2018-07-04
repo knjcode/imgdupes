@@ -25,10 +25,12 @@ from common.spinner import Spinner
 
 
 class KnnHashCache:
-    def __init__(self, args, image_filenames, hash_method, num_proc, load_path=None):
+    def __init__(self, args, image_filenames, hash_method, hash_size, num_proc, load_path=None):
         self.args = args
         self.image_filenames = image_filenames
         self.hashfunc = self.gen_hashfunc(hash_method)
+        self.hash_size = hash_size
+        self.hash_bits = hash_size ** 2
         self.num_proc = num_proc
         self.cache = []
 
@@ -52,10 +54,10 @@ class KnnHashCache:
     def gen_hash(self, img):
         try:
             with Image.open(img) as i:
-                hsh = self.hashfunc(i)
-                hsh = [ 1 if b else 0 for b in hsh.hash.reshape((64))]
+                hsh = self.hashfunc(i, hash_size=self.hash_size)
+                hsh = [ 1 if b else 0 for b in hsh.hash.reshape((self.hash_bits))]
         except:
-            hsh = [2] * 64
+            hsh = [2] * self.hash_bits
         return hsh
 
 
@@ -89,7 +91,7 @@ class KnnHashCache:
         self.package_check()
 
         try:
-            spinner = Spinner(prefix="Calculating image hashes (num_proc={})...".format(self.num_proc))
+            spinner = Spinner(prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_bits, self.num_proc))
             spinner.start()
             if six.PY2:
                 from pathos.multiprocessing import ProcessPool as Pool
@@ -137,11 +139,11 @@ class KnnHashCache:
                 spinner.stop()
                 return True
             else:
-                self.cache = [[2] * 64 for i in range(len(self.image_filenames))]
+                self.cache = [[2] * self.hash_bits for i in range(len(self.image_filenames))]
                 self.make_hash_list()
                 return False
         else:
-            self.cache = [[2] * 64 for i in range(len(self.image_filenames))]
+            self.cache = [[2] * self.hash_bits for i in range(len(self.image_filenames))]
             self.make_hash_list()
             return False
 
