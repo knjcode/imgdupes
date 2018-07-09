@@ -105,6 +105,8 @@ def main(argv=sys.argv[1:]):
         help="do not keep aspect when displaying imagest")
     parser.add_argument("--no-subdir-warning", dest="print_warning", action="store_false",
         help="stop warnings that appear when similar images are in different subdirectories")
+    parser.add_argument("--sameline", action="store_true",
+        help="list each set of matches on a single line")
     parser.add_argument("--dry-run", dest="run", action="store_false",
         help="dry run (do not delete any files)")
     parser.add_argument("--faiss-flat", action="store_true",

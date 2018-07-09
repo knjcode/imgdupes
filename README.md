@@ -199,6 +199,10 @@ do not keep aspect when displaying images
 
 stop warnings that appear when similar images are in different subdirectories
 
+`--sameline`
+
+list each set of matches on a single line
+
 `--dry-run`
 
 dry run (do not delete any files)
