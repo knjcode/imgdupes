@@ -14,7 +14,6 @@ from multiprocessing import cpu_count
 from pathlib import Path
 from PIL import Image
 from termcolor import colored, cprint
-from tqdm import tqdm
 
 import imagehash
 import joblib
@@ -91,7 +90,9 @@ class KnnHashCache:
         self.package_check()
 
         try:
-            spinner = Spinner(prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_bits, self.num_proc))
+            spinner = Spinner(
+                prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_bits, self.num_proc),
+                disable=self.args.quiet)
             spinner.start()
             if six.PY2:
                 from pathos.multiprocessing import ProcessPool as Pool
@@ -133,7 +134,7 @@ class KnnHashCache:
             target_mtime = self.check_latest_dir_mtime(target_dir)
             if cache_mtime > target_mtime:
                 logger.debug("Load hash cache: {}".format(load_path))
-                spinner = Spinner(prefix="Loading hash cache...")
+                spinner = Spinner(prefix="Loading hash cache...", disable=self.args.quiet)
                 spinner.start()
                 self.cache = joblib.load(load_path)
                 spinner.stop()

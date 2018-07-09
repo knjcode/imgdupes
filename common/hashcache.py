@@ -13,7 +13,6 @@ logger.propagate = False
 from multiprocessing import cpu_count
 from pathlib import Path
 from PIL import Image
-from tqdm import tqdm
 
 import imagehash
 import joblib
@@ -24,7 +23,8 @@ from common.spinner import Spinner
 
 
 class HashCache:
-    def __init__(self, image_filenames, hash_method, hash_size, num_proc, load_path=None):
+    def __init__(self, args, image_filenames, hash_method, hash_size, num_proc, load_path=None):
+        self.args = args
         self.image_filenames = image_filenames
         self.hashfunc = self.gen_hashfunc(hash_method)
         self.hash_size = hash_size
@@ -62,7 +62,9 @@ class HashCache:
         if self.num_proc is None:
             self.num_proc = cpu_count() - 1
         try:
-            spinner = Spinner(prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_size ** 2, self.num_proc))
+            spinner = Spinner(
+                prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_size ** 2, self.num_proc),
+                disable=self.args.quiet)
             spinner.start()
             if six.PY2:
                 from pathos.multiprocessing import ProcessPool as Pool
@@ -104,7 +106,7 @@ class HashCache:
             target_mtime = self.check_latest_dir_mtime(target_dir)
             if cache_mtime > target_mtime:
                 logger.debug("Load hash cache: {}".format(load_path))
-                spinner = Spinner(prefix="Loading hash cache...")
+                spinner = Spinner(prefix="Loading hash cache...", disable=self.args.quiet)
                 spinner.start()
                 self.cache = joblib.load(load_path)
                 spinner.stop()

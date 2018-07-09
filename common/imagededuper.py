@@ -3,7 +3,7 @@
 
 from __future__ import (absolute_import, division, print_function)
 
-from logging import getLogger, StreamHandler, DEBUG
+from logging import getLogger, StreamHandler, DEBUG, ERROR
 logger = getLogger(__name__)
 handler = StreamHandler()
 # handler.setLevel(DEBUG)
@@ -52,7 +52,9 @@ class ImageDeduper:
         if args.ngt or args.hnsw or args.faiss_flat:
             self.hashcache = KnnHashCache(args, self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
         else:
-            self.hashcache = HashCache(self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
+            self.hashcache = HashCache(args, self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
+        if args.quiet:
+            logger.setLevel(ERROR)
         self.group = {}
         self.num_duplecate_set = 0
 
@@ -171,7 +173,7 @@ class ImageDeduper:
             hshs = self.hashcache.hshs()
             check_list = [0] * len(hshs)
             current_group_num = 1
-            for i in tqdm(range(len(hshs))):
+            for i in tqdm(range(len(hshs)), disable=args.quiet):
                 new_group_found = False
                 if check_list[i] != 0:
                     # already grouped image
@@ -223,7 +225,7 @@ class ImageDeduper:
             logger.warning("Approximate neighbor searching using hnsw")
             check_list = [0] * num_elements
             current_group_num = 1
-            for i in tqdm(range(num_elements)):
+            for i in tqdm(range(num_elements), disable=args.quiet):
                 new_group_found = False
                 if check_list[i] != 0:
                     # already grouped image
@@ -269,7 +271,7 @@ class ImageDeduper:
             logger.warning("Exact neighbor searching using faiss")
             check_list = [0] * index.ntotal
             current_group_num = 1
-            for i in tqdm(range(index.ntotal)):
+            for i in tqdm(range(index.ntotal), disable=args.quiet):
                 new_group_found = False
                 if check_list[i] != 0:
                     # already grouped image
@@ -303,7 +305,7 @@ class ImageDeduper:
             hshs = self.hashcache.hshs()
             check_list = [0] * len(hshs)
             current_group_num = 1
-            for i in tqdm(range(len(hshs))):
+            for i in tqdm(range(len(hshs)), disable=args.quiet):
                 new_group_found = False
                 hshi = self.hashcache.get(i)
                 for j in range(i+1, len(hshs)):

@@ -14,9 +14,10 @@ class Spinner:
         while 1:
             for cursor in '|/-\\': yield cursor
 
-    def __init__(self, delay=None, prefix=None):
+    def __init__(self, delay=None, prefix=None, disable=False):
         self.prefix = prefix
         self.prefix_len = len(prefix)
+        self.disable = disable
         self.spinner_generator = self.spinning_cursor()
         if delay and float(delay): self.delay = delay
 
@@ -30,13 +31,15 @@ class Spinner:
             sys.stderr.flush()
 
     def start(self):
-        self.busy = True
-        threading.Thread(target=self.spinner_task).start()
+        if not self.disable:
+            self.busy = True
+            threading.Thread(target=self.spinner_task).start()
 
     def stop(self):
-        self.busy = False
-        sys.stderr.write('\r')
-        sys.stderr.write(' ' * (self.prefix_len + 1))
-        sys.stderr.write('\r')
-        sys.stderr.flush()
-        time.sleep(self.delay)
+        if not self.disable:
+            self.busy = False
+            sys.stderr.write('\r')
+            sys.stderr.write(' ' * (self.prefix_len + 1))
+            sys.stderr.write('\r')
+            sys.stderr.flush()
+            time.sleep(self.delay)
