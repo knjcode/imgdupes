@@ -362,7 +362,10 @@ class ImageDeduper:
                 for _k, img_list in six.iteritems(self.group):
                     if len(img_list) > 1:
                         sorted_img_list, _, _, _ = self.sort_image_list(img_list)
-                        f.write("\n".join(sorted_img_list) + "\n\n")
+                        if args.sameline:
+                            f.write(" ".join(sorted_img_list) + "\n")
+                        else:
+                            f.write("\n".join(sorted_img_list) + "\n\n")
 
 
     def sort_image_list(self, img_list):
@@ -405,7 +408,10 @@ class ImageDeduper:
         for _k, img_list in six.iteritems(self.group):
             if len(img_list) > 1:
                 sorted_img_list, _, _, _ = self.sort_image_list(img_list)
-                print("\n".join(sorted_img_list) + "\n")
+                if args.sameline:
+                    print(" ".join(sorted_img_list))
+                else:
+                    print("\n".join(sorted_img_list) + "\n")
 
 
     def preserve(self, args):
