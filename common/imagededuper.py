@@ -155,7 +155,6 @@ class ImageDeduper:
             num_proc = args.num_proc
 
         if self.ngt:
-            # NGT
             try:
                 from ngt import base as ngt
             except:
@@ -182,25 +181,19 @@ class ImageDeduper:
                         continue
                     else:
                         if res.distance <= self.hamming_distance:
-                            if check_list[res.id-1] == 0 and check_list[i] == 0:
-                                # new group
-                                new_group_found = True
-                                check_list[i] = current_group_num
-                                check_list[res.id-1] = current_group_num
-                                self.group[current_group_num] = [self.image_filenames[i]]
-                                self.group[current_group_num].extend([self.image_filenames[res.id-1]])
-                            elif check_list[res.id-1] == 0 and check_list[i] != 0:
-                                # exists group
-                                exists_group_num = check_list[i]
-                                check_list[res.id-1] = exists_group_num
-                                self.group[exists_group_num].extend([self.image_filenames[res.id-1]])
-                            elif check_list[res.id-1] != 0 and check_list[i] == 0:
-                                # exists group
-                                exists_group_num = check_list[res.id-1]
-                                check_list[i] = exists_group_num
-                                self.group[exists_group_num].extend([self.image_filenames[i]])
-                            else: # check_list[res.id-1] != 0 and check_list[i] != 0
-                                pass
+                            if check_list[res.id-1] == 0:
+                                if check_list[i] == 0:
+                                    # new group
+                                    new_group_found = True
+                                    check_list[i] = current_group_num
+                                    check_list[res.id-1] = current_group_num
+                                    self.group[current_group_num] = [self.image_filenames[i]]
+                                    self.group[current_group_num].extend([self.image_filenames[res.id-1]])
+                                else:
+                                    # exists group
+                                    exists_group_num = check_list[i]
+                                    check_list[res.id-1] = exists_group_num
+                                    self.group[exists_group_num].extend([self.image_filenames[res.id-1]])
 
                 if new_group_found:
                     current_group_num += 1
@@ -211,7 +204,6 @@ class ImageDeduper:
 
 
         elif self.hnsw:
-            # hnsw
             try:
                 import hnswlib
             except:
@@ -242,25 +234,19 @@ class ImageDeduper:
                         continue
                     else:
                         if distance <= self.hamming_distance:
-                            if check_list[label] == 0 and check_list[i] == 0:
-                                # new group
-                                new_group_found = True
-                                check_list[i] = current_group_num
-                                check_list[label] = current_group_num
-                                self.group[current_group_num] = [self.image_filenames[i]]
-                                self.group[current_group_num].extend([self.image_filenames[label]])
-                            elif check_list[label] == 0 and check_list[i] != 0:
-                                # exists group
-                                exists_group_num = check_list[i]
-                                check_list[label] = exists_group_num
-                                self.group[exists_group_num].extend([self.image_filenames[label]])
-                            elif check_list[label] != 0 and check_list[i] == 0:
-                                # exists group
-                                exists_group_num = check_list[label]
-                                check_list[i] = exists_group_num
-                                self.group[exists_group_num].extend([self.image_filenames[i]])
-                            else: # check_list[label] != 0 and check_list[i] != 0
-                                pass
+                            if check_list[label] == 0:
+                                if check_list[i] == 0:
+                                    # new group
+                                    new_group_found = True
+                                    check_list[i] = current_group_num
+                                    check_list[label] = current_group_num
+                                    self.group[current_group_num] = [self.image_filenames[i]]
+                                    self.group[current_group_num].extend([self.image_filenames[label]])
+                                else:
+                                    # exists group
+                                    exists_group_num = check_list[i]
+                                    check_list[label] = exists_group_num
+                                    self.group[exists_group_num].extend([self.image_filenames[label]])
 
                 if new_group_found:
                     current_group_num += 1
@@ -294,25 +280,19 @@ class ImageDeduper:
                         continue
                     else:
                         if distance <= self.hamming_distance:
-                            if check_list[label] == 0 and check_list[i] == 0:
-                                # new group
-                                new_group_found = True
-                                check_list[i] = current_group_num
-                                check_list[label] = current_group_num
-                                self.group[current_group_num] = [self.image_filenames[i]]
-                                self.group[current_group_num].extend([self.image_filenames[label]])
-                            elif check_list[label] == 0 and check_list[i] != 0:
-                                # exists group
-                                exists_group_num = check_list[i]
-                                check_list[label] = exists_group_num
-                                self.group[exists_group_num].extend([self.image_filenames[label]])
-                            elif check_list[label] != 0 and check_list[i] == 0:
-                                # exists group
-                                exists_group_num = check_list[label]
-                                check_list[i] = exists_group_num
-                                self.group[exists_group_num].extend([self.image_filenames[i]])
-                            else: # check_list[label] != 0 and check_list[i] != 0
-                                pass
+                            if check_list[label] == 0:
+                                if check_list[i] == 0:
+                                    # new group
+                                    new_group_found = True
+                                    check_list[i] = current_group_num
+                                    check_list[label] = current_group_num
+                                    self.group[current_group_num] = [self.image_filenames[i]]
+                                    self.group[current_group_num].extend([self.image_filenames[label]])
+                                else:
+                                    # exists group
+                                    exists_group_num = check_list[i]
+                                    check_list[label] = exists_group_num
+                                    self.group[exists_group_num].extend([self.image_filenames[label]])
 
                 if new_group_found:
                     current_group_num += 1
@@ -329,25 +309,19 @@ class ImageDeduper:
                 for j in range(i+1, len(hshs)):
                     hshj = self.hashcache.get(j)
                     if (hshi - hshj) <= self.hamming_distance:
-                        if check_list[j] == 0 and check_list[i] == 0:
-                            # new group
-                            new_group_found = True
-                            check_list[i] = current_group_num
-                            check_list[j] = current_group_num
-                            self.group[current_group_num] = [self.image_filenames[i]]
-                            self.group[current_group_num].extend([self.image_filenames[j]])
-                        elif check_list[j] == 0 and check_list[i] != 0:
-                            # exists group
-                            exists_group_num = check_list[i]
-                            check_list[j] = exists_group_num
-                            self.group[exists_group_num].extend([self.image_filenames[j]])
-                        elif check_list[j] != 0 and check_list[i] == 0:
-                            # exists group
-                            exists_group_num = check_list[j]
-                            check_list[i] = exists_group_num
-                            self.group[exists_group_num].extend([self.image_filenames[i]])
-                        else: # check_list[j] != 0 and check_list[i] != 0
-                            pass
+                        if check_list[j] == 0:
+                            if check_list[i] == 0:
+                                # new group
+                                new_group_found = True
+                                check_list[i] = current_group_num
+                                check_list[j] = current_group_num
+                                self.group[current_group_num] = [self.image_filenames[i]]
+                                self.group[current_group_num].extend([self.image_filenames[j]])
+                            else:
+                                # exists group
+                                exists_group_num = check_list[i]
+                                check_list[j] = exists_group_num
+                                self.group[exists_group_num].extend([self.image_filenames[j]])
 
                 if new_group_found:
                     current_group_num += 1
