@@ -121,6 +121,10 @@ def main(argv=sys.argv[1:]):
         help="""search range when using NGT.
             Increasing this value, improves accuracy and increases computation time.
             (default=0.1)""")
+    parser.add_argument("--ngt-edges", type=int, default=10,
+        help="number of initial edges of each node at graph generation time (default=10)")
+    parser.add_argument("--ngt-edges-for-search", type=int, default=40,
+        help="number of edges at search time (default=40)")
     parser.add_argument("--hnsw", action="store_true",
         help="use hnsw for calculating Hamming distance between hash of images")
     parser.add_argument("--hnsw-k", type=int, default=20,

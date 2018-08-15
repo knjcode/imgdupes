@@ -228,6 +228,13 @@ Increasing this value, improves accuracy and increases computation time. (defaul
 search range when using NGT.
 Increasing this value, improves accuracy and increases computation time. (default=0.1)
 
+`--ngt-edges 10`
+
+number of initial edges of each node at graph generation time. (default=10)
+
+`--ngt-edges-for-search 40`
+
+number of edges at search time. (default=40)
 
 ## hnsw options
 

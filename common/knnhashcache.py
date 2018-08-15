@@ -64,7 +64,7 @@ class KnnHashCache:
     def package_check(self):
         if self.args.ngt:
             try:
-                from ngt import base as _ngt
+                import ngtpy as _ngtpy
             except:
                 logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
                 sys.exit(1)

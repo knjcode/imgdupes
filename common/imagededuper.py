@@ -156,15 +156,20 @@ class ImageDeduper:
 
         if self.ngt:
             try:
-                from ngt import base as ngt
+                import ngtpy
             except:
                 logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
                 sys.exit(1)
             index_path = self.get_ngt_index_path()
             logger.warning("Building NGT index (dimension={}, num_proc={})".format(self.hash_bits, num_proc))
-            ngt_index = ngt.Index.create(index_path.encode(), self.hash_bits, object_type="Integer", distance_type="Hamming")
-            ngt_index.insert(self.hashcache.hshs(), num_proc)
-            ngt_index.build_index(num_proc)
+            ngtpy.create(path=index_path.encode(),
+                dimension=self.hash_bits,
+                edge_size_for_creation=args.ngt_edges,
+                edge_size_for_search=args.ngt_edges_for_search,
+                object_type="Byte",
+                distance_type="Hamming")
+            ngt_index = ngtpy.Index(index_path.encode())
+            ngt_index.batch_insert(self.hashcache.hshs(), num_proc)
 
             # NGT Approximate neighbor search
             logger.warning("Approximate neighbor searching using NGT")
@@ -176,24 +181,24 @@ class ImageDeduper:
                 if check_list[i] != 0:
                     # already grouped image
                     continue
-                for res in ngt_index.search(hshs[i], k=args.ngt_k, epsilon=args.ngt_epsilon):
-                    if res.id-1 == i:
+                for res in ngt_index.search(hshs[i], size=args.ngt_k, epsilon=args.ngt_epsilon):
+                    if res[0] == i:
                         continue
                     else:
-                        if res.distance <= self.hamming_distance:
-                            if check_list[res.id-1] == 0:
+                        if res[1] <= self.hamming_distance:
+                            if check_list[res[0]] == 0:
                                 if check_list[i] == 0:
                                     # new group
                                     new_group_found = True
                                     check_list[i] = current_group_num
-                                    check_list[res.id-1] = current_group_num
+                                    check_list[res[0]] = current_group_num
                                     self.group[current_group_num] = [self.image_filenames[i]]
-                                    self.group[current_group_num].extend([self.image_filenames[res.id-1]])
+                                    self.group[current_group_num].extend([self.image_filenames[res[0]]])
                                 else:
                                     # exists group
                                     exists_group_num = check_list[i]
-                                    check_list[res.id-1] = exists_group_num
-                                    self.group[exists_group_num].extend([self.image_filenames[res.id-1]])
+                                    check_list[res[0]] = exists_group_num
+                                    self.group[exists_group_num].extend([self.image_filenames[res[0]]])
 
                 if new_group_found:
                     current_group_num += 1
