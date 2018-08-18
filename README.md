@@ -111,14 +111,15 @@ $ docker pull knjcode/imgdupes
 
 # Available hash algorithm
 
-`imgdupes` uses the [ImageHash] to calculate perceptual hash.
-You can use the same hash method as [ImageHash] library.
+`imgdupes` uses the [ImageHash] to calculate perceptual hash (except for `phash-org` algorithm).
 
 - [ahash]: average hashing
-- [phash]: perception hashing
+- [phash]: perception hashing (using only the 8x8 DCT low-frequency values including the first term)
 - [dhash]: difference hashing
 - [whash]: wavelet hashing
 
+- [phash-org]: perception hashing (fix algorithm from ImageHash implementation)  
+  > using only the 8x8 DCT low-frequency values and excluding the first term since the DC coefficient can be significantly different from the other values and will throw off the average.
 
 # Options
 
@@ -271,6 +272,7 @@ MIT
 [phash]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
 [dhash]: http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
 [whash]: https://fullstackml.com/2016/07/02/wavelet-image-hash-in-python/
+[phash-org]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
 [NGT]: https://github.com/yahoojapan/NGT
 [python NGT]: https://github.com/yahoojapan/NGT/tree/master/python
 [hnsw]: https://github.com/nmslib/hnsw

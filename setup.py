@@ -22,6 +22,8 @@ setuptools.setup(
         'future',
         'ImageHash',
         'joblib',
+        'numpy',
+        'scipy',
         'opencv-python',
         'pathlib',
         'pathos',

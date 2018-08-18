@@ -20,6 +20,8 @@ import imagehash
 import joblib
 import sys
 import six
+import numpy
+import scipy
 
 from common.spinner import Spinner
 
@@ -106,6 +108,21 @@ class KnnHashCache:
             spinner.stop()
             sys.exit(1)
 
+    def phash_org(self, image, hash_size=8, highfreq_factor=4):
+        if hash_size < 2:
+                raise ValueError("Hash size must be greater than or equal to 2")
+
+        import scipy.fftpack
+        img_size = hash_size * highfreq_factor
+        image = image.convert("L").resize((img_size, img_size), Image.ANTIALIAS)
+        pixels = numpy.asarray(image)
+        dct = scipy.fftpack.dct(scipy.fftpack.dct(pixels, axis=0), axis=1)
+        # using only the 8x8 DCT low-frequency values and excluding the first term since the DC coefficient
+        # can be significantly different from the other valuesand will throw off the average.
+        dctlowfreq = dct[1:hash_size+1, 1:hash_size+1]
+        med = numpy.median(dctlowfreq)
+        diff = dctlowfreq > med
+        return imagehash.ImageHash(diff)
 
     def gen_hashfunc(self, hash_method):
         if hash_method == 'ahash':
@@ -116,6 +133,8 @@ class KnnHashCache:
             hashfunc = imagehash.dhash
         elif hash_method == 'whash':
             hashfunc = imagehash.whash
+        elif hash_method == 'phash_org':
+            hashfunc = self.phash_org
         return hashfunc
 
 
