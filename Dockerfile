@@ -1,4 +1,4 @@
-FROM python:3.6.5-slim-stretch
+FROM python:3.6.6-slim-stretch
 
 WORKDIR /app
 
@@ -12,16 +12,16 @@ RUN apt-get update \
 # install ngt
 RUN git clone https://github.com/yahoojapan/NGT.git \
   && cd NGT \
-  && git checkout v1.3.3 \
+  && git checkout v1.4.2 \
   && mkdir build && cd build \
   && cmake .. \
   && make \
   && make install \
+  && ldconfig \
   && cd ../python \
-  && pip install --upgrade pip==9.0.3 \
   && pip install pybind11 \
   && python setup.py sdist \
-  && pip install dist/ngt-1.1.0.tar.gz
+  && pip install dist/ngt-1.2.0.tar.gz
 
 # install hnsw
 RUN git clone https://github.com/nmslib/hnsw.git \
@@ -39,6 +39,8 @@ RUN git clone https://github.com/facebookresearch/faiss.git \
   && cd python \
   && python setup.py install
 
-RUN pip install imgdupes
+ARG VERSION
+COPY dist/imgdupes-${VERSION}.tar.gz .
+RUN pip install imgdupes-${VERSION}.tar.gz
 
 ENTRYPOINT ["imgdupes"]
