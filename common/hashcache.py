@@ -19,6 +19,8 @@ import imagehash
 import joblib
 import sys
 import six
+import numpy
+import scipy
 
 from common.spinner import Spinner
 

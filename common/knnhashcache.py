@@ -108,6 +108,7 @@ class KnnHashCache:
             spinner.stop()
             sys.exit(1)
 
+
     def phash_org(self, image, hash_size=8, highfreq_factor=4):
         if hash_size < 2:
                 raise ValueError("Hash size must be greater than or equal to 2")
@@ -123,6 +124,7 @@ class KnnHashCache:
         med = numpy.median(dctlowfreq)
         diff = dctlowfreq > med
         return imagehash.ImageHash(diff)
+
 
     def gen_hashfunc(self, hash_method):
         if hash_method == 'ahash':

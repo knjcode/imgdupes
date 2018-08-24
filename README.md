@@ -111,14 +111,14 @@ $ docker pull knjcode/imgdupes
 
 # Available hash algorithm
 
-`imgdupes` uses the [ImageHash] to calculate perceptual hash (except for `phash-org` algorithm).
+`imgdupes` uses the [ImageHash] to calculate perceptual hash (except for `phash_org` algorithm).
 
 - [ahash]: average hashing
 - [phash]: perception hashing (using only the 8x8 DCT low-frequency values including the first term)
 - [dhash]: difference hashing
 - [whash]: wavelet hashing
 
-- [phash-org]: perception hashing (fix algorithm from ImageHash implementation)  
+- [phash_org]: perception hashing (fix algorithm from ImageHash implementation)  
   > using only the 8x8 DCT low-frequency values and excluding the first term since the DC coefficient can be significantly different from the other values and will throw off the average.
 
 # Options
