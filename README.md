@@ -170,6 +170,24 @@ output logs of duplicate and delete files (default=False)
 
 create and use image hash cache (default=False)
 
+`--no-subdir-warning`
+
+stop warnings that appear when similar images are in different subdirectories
+
+`--sameline`
+
+list each set of matches on a single line
+
+`--dry-run`
+
+dry run (do not delete any files)
+
+`--faiss-flat`
+
+use faiss exact search (IndexFlatL2) for calculating Hamming distance between hash of images (default=False)
+
+## use with imgcat (`-c`, `--imgcat`) options
+
 `--size 256x256`
 
 resize image (default=256x256)
@@ -195,22 +213,6 @@ You can specify OpenCV interpolation methods: INTER_NEAREST, INTER_LINEAR, INTER
 `--no-keep-aspect`
 
 do not keep aspect when displaying images
-
-`--no-subdir-warning`
-
-stop warnings that appear when similar images are in different subdirectories
-
-`--sameline`
-
-list each set of matches on a single line
-
-`--dry-run`
-
-dry run (do not delete any files)
-
-`--faiss-flat`
-
-use faiss exact search (IndexFlatL2) for calculating Hamming distance between hash of images (default=False)
 
 
 ## ngt options

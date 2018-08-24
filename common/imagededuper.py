@@ -387,6 +387,8 @@ class ImageDeduper:
         for _k, img_list in six.iteritems(self.group):
             if len(img_list) > 1:
                 sorted_img_list, _, _, _ = self.sort_image_list(img_list)
+                if args.imgcat:
+                    imgcat_for_iTerm2(create_tile_img(sorted_img_list, args))
                 if args.sameline:
                     print(" ".join(sorted_img_list))
                 else:
