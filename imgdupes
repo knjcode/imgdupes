@@ -75,6 +75,8 @@ def main(argv=sys.argv[1:]):
         help="prompt user for files to preserve and delete")
     parser.add_argument("-c", "--imgcat", action="store_true",
         help="display duplicate images for iTerm2")
+    parser.add_argument("--query", type=str, default=None,
+        help="find image files that are duplicated or similar to the specified image file from the target directory")
     parser.add_argument("--hash-bits", type=int, default=64,
         help="""bits of perceptual hash.
             The number of bits specifies the value that is the square of n.
@@ -99,6 +101,8 @@ def main(argv=sys.argv[1:]):
         help="dry run (do not delete any files)")
     parser.add_argument("--faiss-flat", action="store_true",
         help="use faiss exact search (IndexFlatL2) for calculating Hamming distance between hash of images")
+    parser.add_argument("--faiss-flat-k", type=int, default=20,
+        help="number of searched objects when using faiss-flat (default=20)")
 
     # imgcat options
     parser.add_argument("--size", type=str, default="256x256",
