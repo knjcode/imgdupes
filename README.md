@@ -1,17 +1,17 @@
 # imgdupes
 
-`imgdupes` is a command line tool for finding and deleting duplicate and/or similar image files based on perceptual hash.
+`imgdupes` is a command line tool for checking and deleting near-duplicate images based on perceptual hash from the target directory.
 
 ![video_capture](video_capture.gif)
 Images by [Caltech 101] dataset that semi-deduped for demonstration.
 
-You can delete duplicate image files with an operation similar to the [`fdupes`] command.  
-It is better to pre-deduplicate identical files with [`fdupes`] in advance.
+It is better to pre-deduplicate identical images with [`fdupes`] or [`jdupes`] in advance.  
+Then, you can check and delete near-duplicate images using `imgdupes` with an operation similar to the [`fdupes`] command.
 
 
 ## For large dataset
 
-It is possible to speed up dedupe process by approximate nearest neighbor search of hamming distance with [NGT] or [hnsw].
+It is possible to speed up dedupe process by approximate nearest neighbor search of hamming distance using [NGT] or [hnsw].
 See [Against large dataset](#against-large-dataset) section for details.
 
 
@@ -26,11 +26,11 @@ $ pip install imgdupes
 
 # Usage
 
-Find a set of images with Hamming distance of phash less than 4 from target directory.  
+The following example is sample command to find sets of near-duplicate images with Hamming distance of phash less than 4 from the target directory.  
 To search images recursively from the target directory, add `-r` or `--recursive` option.
 
 ```bash
-$ imgdupes --recursive <target_dir> phash 4
+$ imgdupes --recursive target_dir phash 4
 target_dir/airplane_0583.jpg
 target_dir/airplane_0800.jpg
 
@@ -50,9 +50,21 @@ $ imgdupes --recursive --delete --imgcat 101_ObjectCategories phash 4
 The set of images are sorted in ascending order of file size and displayed together with the pixel size of the image, you choose which image to preserve.
 
 
+## Find near-duplicated images from an image you specified
+
+Use `--query` option to specify a query image file.
+
+```bash
+$ imgdupes --recursive target_dir --query target_dir/airplane_0583.jpg phash 4
+Query: sample_airplane.png
+target_dir/airplane_0583.jpg
+target_dir/airplane_0800.jpg
+```
+
+
 # Against large dataset
 
-`imgdupes` supports approximate nearest neighbor search of hamming distance with [NGT] or [hnsw].
+`imgdupes` supports approximate nearest neighbor search of hamming distance using [NGT] or [hnsw].
 
 To dedupe images using NGT, run with `--ngt` option after installing NGT and python binding.
 
@@ -71,7 +83,7 @@ $ imgdupes -rdc --hnsw 101_ObjectCategories phash 4
 
 # Fast exact searching
 
-`imgdupes` supports exact nearest neighbor search of hamming distance with [faiss] (IndexFlatL2).
+`imgdupes` supports exact nearest neighbor search of hamming distance using [faiss] (IndexFlatL2).
 
 To dedupe images using faiss, run with `--faiss-flat` option after installing faiss python binding.
 
@@ -88,7 +100,7 @@ You can use `imgdupes` without installing it using a pre-build docker container 
 Place the target directory in the current directory and execute the following command.
 
 ```bash
-$ docker run -it -v $PWD:/app knjcode/imgdupes -rdc --ngt <target_dir> phash 0
+$ docker run -it -v $PWD:/app knjcode/imgdupes -rdc --ngt target_dir phash 0
 ```
 
 When docker run, current directory is mounted inside the container and referenced from imgdupes.
@@ -98,7 +110,7 @@ By aliasing the command, you can use `imgdupes` as installed.
 
 ```bash
 $ alias imgdupes="docker run -it -v $PWD:/app knjcode/imgdupes"
-$ imgdupes -rdc --hnsw <target_dir> phash 0
+$ imgdupes -rdc --hnsw target_dir phash 0
 ```
 
 
@@ -134,6 +146,10 @@ prompt user for files to preserve and delete (default=False)
 `-c` `--imgcat`
 
 display duplicate images for iTerm2 (default=False)
+
+ `--query <image filename>`
+
+ find image files that are duplicated or similar to the specified image file from the target directory
 
 `--hash-bits 64`
 
@@ -185,6 +201,11 @@ dry run (do not delete any files)
 `--faiss-flat`
 
 use faiss exact search (IndexFlatL2) for calculating Hamming distance between hash of images (default=False)
+
+`--faiss-flat-k 20`
+
+ number of searched objects when using faiss-flat (default=20)
+
 
 ## use with imgcat (`-c`, `--imgcat`) options
 
@@ -268,13 +289,14 @@ controls recall. higher ef leads to better accuracy, but slower search (default=
 MIT
 
 [`fdupes`]: (https://github.com/adrianlopezroche/fdupes)
+[`jdupes`]: (https://github.com/jbruchon/jdupes)
 [Caltech 101]: http://www.vision.caltech.edu/Image_Datasets/Caltech101/
 [ImageHash]: https://github.com/JohannesBuchner/imagehash
 [ahash]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
 [phash]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
 [dhash]: http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
 [whash]: https://fullstackml.com/2016/07/02/wavelet-image-hash-in-python/
-[phash-org]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
+[phash_org]: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
 [NGT]: https://github.com/yahoojapan/NGT
 [python NGT]: https://github.com/yahoojapan/NGT/tree/master/python
 [hnsw]: https://github.com/nmslib/hnsw
