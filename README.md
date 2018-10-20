@@ -47,7 +47,13 @@ If you are using iTerm 2, you can display a set of images on the terminal with t
 $ imgdupes --recursive --delete --imgcat 101_ObjectCategories phash 4
 ```
 
-The set of images are sorted in ascending order of file size and displayed together with the pixel size of the image, you choose which image to preserve.
+The set of images are sorted in ascending order of file size and displayed together with the pixel size of the image, you can choose which image to preserve.
+
+With `-N` or `--noprompt` option, you can preserve the first file in each set of duplicates and delete the rest without prompting.
+
+```bash
+$ imgdupes -rdN 101_ObjectCategories phash 0
+```
 
 
 ## Find near-duplicated images from an image you specified
@@ -146,6 +152,10 @@ prompt user for files to preserve and delete (default=False)
 `-c` `--imgcat`
 
 display duplicate images for iTerm2 (default=False)
+
+`-N` `--noprompt`
+
+together with `--delete`, preserve the first file in each set of duplicates and delete the rest without prompting the user
 
  `--query <image filename>`
 

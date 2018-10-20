@@ -75,6 +75,8 @@ def main(argv=sys.argv[1:]):
         help="prompt user for files to preserve and delete")
     parser.add_argument("-c", "--imgcat", action="store_true",
         help="display duplicate images for iTerm2")
+    parser.add_argument("-N", "--noprompt", action="store_true",
+        help="together with --delete, preserve the first file in each set of duplicates and delete the rest without prompting the user")
     parser.add_argument("--query", type=str, default=None,
         help="find image files that are duplicated or similar to the specified image file from the target directory")
     parser.add_argument("--hash-bits", type=int, default=64,
