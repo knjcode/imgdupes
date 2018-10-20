@@ -482,7 +482,10 @@ class ImageDeduper:
                     print(img_number + img_info[len(img_number):])
                 print("")
                 print("Set {} of {}, ".format(current_set, self.num_duplecate_set), end='')
-                delete_list = self.preserve_file_question(len(sorted_img_list))
+                if args.noprompt:
+                    delete_list = [i for i in range(2, len(sorted_img_list)+1)]
+                else:
+                    delete_list = self.preserve_file_question(len(sorted_img_list))
                 logger.debug("delete_list: {}".format(delete_list))
 
                 print("")
