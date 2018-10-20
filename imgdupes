@@ -50,6 +50,10 @@ def dedupe_images(args):
             deduper.preserve(args)
         else:
             deduper.print_duplicates(args)
+
+        if args.summarize:
+            deduper.summarize(args)
+
     except KeyboardInterrupt:
         sys.exit(1)
 
@@ -75,6 +79,8 @@ def main(argv=sys.argv[1:]):
         help="prompt user for files to preserve and delete")
     parser.add_argument("-c", "--imgcat", action="store_true",
         help="display duplicate images for iTerm2")
+    parser.add_argument("-m", "--summarize", action="store_true",
+        help="summarize dupe information")
     parser.add_argument("-N", "--noprompt", action="store_true",
         help="together with --delete, preserve the first file in each set of duplicates and delete the rest without prompting the user")
     parser.add_argument("--query", type=str, default=None,
@@ -152,6 +158,12 @@ def main(argv=sys.argv[1:]):
         help="controls recall. higher ef leads to better accuracy, but slower search (default=50)")
 
     args = parser.parse_args()
+
+    # check options
+    if args.delete and args.summarize:
+        print("options --summarize and --delete are not compatible")
+        sys.exit(1)
+
     dedupe_images(args)
 
 

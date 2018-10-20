@@ -49,12 +49,13 @@ class ImageDeduper:
         self.faiss_flat = args.faiss_flat
         self.hash_size = self.get_hash_size()
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
+        self.duplicate_filesize_dict = {}
         if args.ngt or args.hnsw or args.faiss_flat:
             self.hashcache = KnnHashCache(args, self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
         else:
             self.hashcache = HashCache(self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
         self.group = {}
-        self.num_duplecate_set = 0
+        self.num_duplicate_set = 0
 
 
     def get_valid_filename(self, path):
@@ -377,8 +378,8 @@ class ImageDeduper:
 
 
         # write duplicate log file
-        self.num_duplecate_set = current_group_num - 1
-        if self.num_duplecate_set > 0 and args.log:
+        self.num_duplicate_set = current_group_num - 1
+        if self.num_duplicate_set > 0 and args.log:
             now = datetime.now().strftime('%Y%m%d%H%M%S')
             duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
             with open(duplicate_log_file, 'w') as f:
@@ -395,6 +396,23 @@ class ImageDeduper:
                                 f.write("\n")
 
 
+    def summarize(self, args):
+        # summarize dupe information
+        if self.num_duplicate_set > 0:
+            duplicate_files = set()
+            for filenames in self.group.values():
+                for filename in filenames:
+                    duplicate_files.add(filename)
+            num_duplicate_files = len(duplicate_files)
+            numbytes = 0
+            for filename in duplicate_files:
+                numbytes += self.duplicate_filesize_dict[filename]
+            numkilobytes = int(numbytes / 1000)
+            print("{} duplicate files (in {} sets), occupying {} KB".format(num_duplicate_files, self.num_duplicate_set, numkilobytes))
+        else:
+            print("No duplicates found.")
+
+
     def sort_image_list(self, img_list):
         rev = not self.reverse
         img_filesize_dict = {}
@@ -403,6 +421,7 @@ class ImageDeduper:
         img_height_dict = {}
         for img in img_list:
             img_filesize_dict[img] = os.path.getsize(img)
+            self.duplicate_filesize_dict[img] = img_filesize_dict[img]
             with Image.open(img) as current_img:
                 width, height = current_img.size
                 img_size_dict[img] = width + height
@@ -481,7 +500,7 @@ class ImageDeduper:
                     img_info = "{:>14.2f} kbyte {:>9} {}".format((filesize/1024), pixel, img)
                     print(img_number + img_info[len(img_number):])
                 print("")
-                print("Set {} of {}, ".format(current_set, self.num_duplecate_set), end='')
+                print("Set {} of {}, ".format(current_set, self.num_duplicate_set), end='')
                 if args.noprompt:
                     delete_list = [i for i in range(2, len(sorted_img_list)+1)]
                 else:
