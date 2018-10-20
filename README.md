@@ -153,6 +153,10 @@ prompt user for files to preserve and delete (default=False)
 
 display duplicate images for iTerm2 (default=False)
 
+`-m` `--summarize`
+
+summarize dupe information
+
 `-N` `--noprompt`
 
 together with `--delete`, preserve the first file in each set of duplicates and delete the rest without prompting the user
