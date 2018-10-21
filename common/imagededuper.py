@@ -377,6 +377,9 @@ class ImageDeduper:
                     current_group_num += 1
 
 
+        # sort self.group
+        self.sort_group()
+
         # write duplicate log file
         self.num_duplicate_set = current_group_num - 1
         if self.num_duplicate_set > 0 and args.log:
@@ -385,7 +388,8 @@ class ImageDeduper:
             with open(duplicate_log_file, 'w') as f:
                 if args.query:
                     f.write("Query: {}\n".format(args.query))
-                for k, img_list in six.iteritems(self.group):
+                for k in range(1, self.num_duplicate_set + 1):
+                    img_list = self.group[k]
                     if len(img_list) > 1:
                         sorted_img_list, _, _, _ = self.sort_image_list(img_list)
                         if args.sameline:
@@ -411,6 +415,21 @@ class ImageDeduper:
             print("{} duplicate files (in {} sets), occupying {} KB".format(num_duplicate_files, self.num_duplicate_set, numkilobytes))
         else:
             print("No duplicates found.")
+
+
+    def sort_group(self):
+        tmp_group_list = []
+        new_group_dict = {}
+        for _, filenames in self.group.items():
+            filenames = sorted(filenames)
+            tmp_group_list.append(filenames)
+
+        sorted_tmp_group_list = sorted(tmp_group_list)
+
+        for key, filenames in enumerate(sorted_tmp_group_list, start=1):
+            new_group_dict[key] = filenames
+
+        self.group = new_group_dict
 
 
     def sort_image_list(self, img_list):
@@ -456,7 +475,8 @@ class ImageDeduper:
                 imgcat_for_iTerm2(create_tile_img([args.query], args))
             print("Query: {}\n".format(args.query))
 
-        for _k, img_list in six.iteritems(self.group):
+        for k in range(1, self.num_duplicate_set + 1):
+            img_list = self.group[k]
             if len(img_list) > 1:
                 sorted_img_list, _, _, _ = self.sort_image_list(img_list)
                 if args.imgcat:
