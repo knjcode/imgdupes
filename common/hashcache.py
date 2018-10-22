@@ -13,6 +13,7 @@ logger.propagate = False
 from multiprocessing import cpu_count
 from pathlib import Path
 from PIL import Image
+from termcolor import colored, cprint
 from tqdm import tqdm
 
 import imagehash
@@ -26,10 +27,12 @@ from common.spinner import Spinner
 
 
 class HashCache:
-    def __init__(self, image_filenames, hash_method, hash_size, num_proc, load_path=None):
+    def __init__(self, args, image_filenames, hash_method, hash_size, num_proc, load_path=None):
+        self.args = args
         self.image_filenames = image_filenames
         self.hashfunc = self.gen_hashfunc(hash_method)
         self.hash_size = hash_size
+        self.hash_bits = hash_size ** 2
         self.num_proc = num_proc
         self.cache = []
 
@@ -50,21 +53,43 @@ class HashCache:
         try:
             with Image.open(img) as i:
                 hsh = self.hashfunc(i, hash_size=self.hash_size)
+                hsh = numpy.array([ 1 if b else 0 for b in hsh.hash.reshape((self.hash_bits))])
         except:
-            hsh = imagehash.hex_to_hash('0x0000000000000000')
+            hsh = numpy.array([2] * self.hash_bits)
         return hsh
 
 
-    def chunk(self, seq, chunk_size):
-        for i in range(0, len(seq), chunk_size):
-            yield seq[i:i+chunk_size]
+    def package_check(self):
+        if self.args.ngt:
+            try:
+                import ngtpy as _ngtpy
+            except:
+                logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
+                sys.exit(1)
+        elif self.args.hnsw:
+            try:
+                import hnswlib as _hnswlib
+            except:
+                logger.error(colored("Error: Unable to load hnsw. Please install hnsw python binding first.", 'red'))
+                sys.exit(1)
+        elif self.args.faiss_flat:
+            try:
+                import faiss as _faiss
+            except:
+                logger.error(colored("Error: Unable to load faiss. Please install faiss python binding first.", 'red'))
+                sys.exit(1)
+        else:
+            pass
 
 
     def make_hash_list(self):
         if self.num_proc is None:
             self.num_proc = cpu_count() - 1
+
+        self.package_check()
+
         try:
-            spinner = Spinner(prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_size ** 2, self.num_proc))
+            spinner = Spinner(prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_bits, self.num_proc))
             spinner.start()
             if six.PY2:
                 from pathos.multiprocessing import ProcessPool as Pool

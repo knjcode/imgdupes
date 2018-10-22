@@ -30,7 +30,6 @@ import numpy as np
 
 from common.imgcatutil import imgcat_for_iTerm2, create_tile_img
 from common.hashcache import HashCache
-from common.knnhashcache import KnnHashCache
 
 
 class ImageDeduper:
@@ -50,10 +49,7 @@ class ImageDeduper:
         self.hash_size = self.get_hash_size()
         self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
         self.duplicate_filesize_dict = {}
-        if args.ngt or args.hnsw or args.faiss_flat:
-            self.hashcache = KnnHashCache(args, self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
-        else:
-            self.hashcache = HashCache(self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
+        self.hashcache = HashCache(args, self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
         self.group = {}
         self.num_duplicate_set = 0
 
@@ -64,10 +60,7 @@ class ImageDeduper:
 
 
     def get_hashcache_dump_name(self):
-        if self.ngt or self.hnsw or self.faiss_flat:
-            return "hash_cache_knn_{}_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method, self.hash_bits)
-        else:
-            return "hash_cache_std_{}_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method, self.hash_bits)
+        return "hash_cache_{}_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method, self.hash_bits)
 
 
     def get_duplicate_log_name(self):
@@ -344,10 +337,11 @@ class ImageDeduper:
             if not args.query:
                 for i in tqdm(range(len(hshs))):
                     new_group_found = False
-                    hshi = self.hashcache.get(i)
+                    hshi = hshs[i]
                     for j in range(i+1, len(hshs)):
-                        hshj = self.hashcache.get(j)
-                        if (hshi - hshj) <= self.hamming_distance:
+                        hshj = hshs[j]
+                        hamming_distance = np.count_nonzero(hshi != hshj)
+                        if hamming_distance <= self.hamming_distance:
                             if check_list[j] == 0:
                                 if check_list[i] == 0:
                                     # new group
@@ -359,6 +353,12 @@ class ImageDeduper:
                                 else:
                                     # exists group
                                     exists_group_num = check_list[i]
+                                    # check hamming distances of exists group
+                                    for filename in self.group[exists_group_num]:
+                                        h = hshs[self.image_filenames.index(filename)]
+                                        hamming_distance = np.count_nonzero(h != hshj)
+                                        if not hamming_distance <= self.hamming_distance:
+                                            continue
                                     check_list[j] = exists_group_num
                                     self.group[exists_group_num].extend([self.image_filenames[j]])
 
@@ -369,8 +369,9 @@ class ImageDeduper:
                 hsh = self.hashcache.gen_hash(args.query)
                 self.group[current_group_num] = []
                 for i in tqdm(range(len(hshs))):
-                    hshi = self.hashcache.get(i)
-                    if (hshi - hsh) <= self.hamming_distance:
+                    hshi = hshs[i]
+                    hamming_distance = np.count_nonzero(hshi != hsh)
+                    if hamming_distance <= self.hamming_distance:
                         new_group_found = True
                         self.group[current_group_num].extend([self.image_filenames[i]])
                 if new_group_found:
