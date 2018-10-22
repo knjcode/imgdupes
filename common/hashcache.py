@@ -13,7 +13,6 @@ logger.propagate = False
 from multiprocessing import cpu_count
 from pathlib import Path
 from PIL import Image
-from termcolor import colored, cprint
 from tqdm import tqdm
 
 import imagehash
@@ -59,34 +58,9 @@ class HashCache:
         return hsh
 
 
-    def package_check(self):
-        if self.args.ngt:
-            try:
-                import ngtpy as _ngtpy
-            except:
-                logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
-                sys.exit(1)
-        elif self.args.hnsw:
-            try:
-                import hnswlib as _hnswlib
-            except:
-                logger.error(colored("Error: Unable to load hnsw. Please install hnsw python binding first.", 'red'))
-                sys.exit(1)
-        elif self.args.faiss_flat:
-            try:
-                import faiss as _faiss
-            except:
-                logger.error(colored("Error: Unable to load faiss. Please install faiss python binding first.", 'red'))
-                sys.exit(1)
-        else:
-            pass
-
-
     def make_hash_list(self):
         if self.num_proc is None:
             self.num_proc = cpu_count() - 1
-
-        self.package_check()
 
         try:
             spinner = Spinner(prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_bits, self.num_proc))
