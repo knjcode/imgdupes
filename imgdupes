@@ -124,8 +124,8 @@ def main(argv=sys.argv[1:]):
         help="number of hash calculation and ngt processes (default=cpu_count-1)")
     parser.add_argument("--log", action="store_true",
         help="output logs of duplicate and delete files")
-    parser.add_argument("--cache", action="store_true",
-        help="create and use image hash cache")
+    parser.add_argument("--no-cache", dest="cache", action="store_false",
+        help="not create or use image hash cache")
     parser.add_argument("--no-subdir-warning", dest="print_warning", action="store_false",
         help="stop warnings that appear when similar images are in different subdirectories")
     parser.add_argument("--sameline", action="store_true",
