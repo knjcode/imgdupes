@@ -14,6 +14,7 @@ logger.propagate = False
 
 from pathlib import Path
 from common.imagededuper import ImageDeduper
+from termcolor import colored, cprint
 
 import sys
 
@@ -21,6 +22,29 @@ import sys
 def is_image(path):
     img_file_ext = ['.png', '.PNG', '.jpg', '.JPG', '.jpeg', '.JPEG', '.gif', '.GIF']
     return path.suffix in img_file_ext
+
+
+def package_check(args):
+    if args.ngt:
+        try:
+            import ngtpy as _ngtpy
+        except:
+            logger.error(colored("Error: Unable to load NGT. Please install NGT and python binding first.", 'red'))
+            sys.exit(1)
+    elif args.hnsw:
+        try:
+            import hnswlib as _hnswlib
+        except:
+            logger.error(colored("Error: Unable to load hnsw. Please install hnsw python binding first.", 'red'))
+            sys.exit(1)
+    elif args.faiss_flat:
+        try:
+            import faiss as _faiss
+        except:
+            logger.error(colored("Error: Unable to load faiss. Please install faiss python binding first.", 'red'))
+            sys.exit(1)
+    else:
+        pass
 
 
 def gen_image_filenames(target_dir, recursive):
@@ -43,6 +67,7 @@ def dedupe_images(args):
     target_dir = args.target_dir
     recursive = args.recursive
     try:
+        package_check(args)
         deduper = ImageDeduper(args, gen_image_filenames(target_dir, recursive))
         deduper.dedupe(args)
 
