@@ -196,9 +196,9 @@ number of hash calculation and ngt processes (default=cpu_count-1)
 
 output logs of duplicate and delete files (default=False)
 
-`--cache`
+`--no-cache`
 
-create and use image hash cache (default=False)
+not create or use image hash cache (default=False)
 
 `--no-subdir-warning`
 
