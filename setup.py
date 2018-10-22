@@ -25,6 +25,7 @@ setuptools.setup(
         'numpy',
         'scipy',
         'opencv-python',
+        'orderedset',
         'pathlib',
         'pathos',
         'Pillow',

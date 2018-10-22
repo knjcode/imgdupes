@@ -3,6 +3,7 @@ ImageHash==4.0
 joblib==0.12.5
 numpy==1.15.2
 opencv-python==3.4.3.18
+orderedset==2.0.1
 pathlib==1.0.1
 pathos==0.2.2.1
 Pillow==5.3.0

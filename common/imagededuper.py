@@ -19,6 +19,7 @@ from pathlib import Path
 from PIL import Image
 from termcolor import colored, cprint
 from tqdm import tqdm
+from orderedset import OrderedSet
 
 import imagehash
 import os
@@ -108,7 +109,7 @@ class ImageDeduper:
     def preserve_file_question(self, file_num):
         preserve_all = {"all": True, "a": True}
         delete_all = {"none":True, "no": True, "n": True}
-        file_num_set = set([i for i in range(1,file_num+1)])
+        file_num_set = OrderedSet([i for i in range(1,file_num+1)])
         prompt = "preserve files [1 - {}, all, none]: ".format(file_num)
         error_prompt = "Please respond with comma-separated file numbers or all (a) or none (n).\n"
 
@@ -123,7 +124,7 @@ class ImageDeduper:
                 return [i for i in range(1,file_num+1)]
             else:
                 try:
-                    input_num_set = set([int(i) for i in choice.split(',')])
+                    input_num_set = OrderedSet([int(i) for i in choice.split(',')])
                     logger.debug("input_num_set: {}".format(input_num_set))
                     delete_set = file_num_set - input_num_set
                     valid_set = input_num_set - file_num_set
@@ -505,7 +506,7 @@ class ImageDeduper:
                     imgcat_for_iTerm2(create_tile_img(sorted_img_list, args))
 
                 # check different parent dir
-                parent_set = set([])
+                parent_set = OrderedSet([])
                 for img in sorted_img_list:
                     parent_set.add(str(Path(img).parent))
                 if len(parent_set) > 1 and args.print_warning:
