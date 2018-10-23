@@ -12,7 +12,7 @@ logger.propagate = False
 
 from multiprocessing import cpu_count
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageFile
 from tqdm import tqdm
 
 import imagehash
@@ -23,6 +23,8 @@ import numpy
 import scipy
 
 from common.spinner import Spinner
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
 class HashCache:
