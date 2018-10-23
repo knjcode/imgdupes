@@ -47,7 +47,9 @@ def package_check(args):
         pass
 
 
-def gen_image_filenames(target_dir, recursive):
+def gen_image_filenames(args):
+    target_dir = args.target_dir
+    recursive = args.recursive
     image_filenames = []
     if recursive:
         for path in Path(target_dir).glob('**/*'):
@@ -60,15 +62,15 @@ def gen_image_filenames(target_dir, recursive):
     if len(image_filenames) == 0:
         logger.error("Image not found. To search the directory recursively, add the --recursive option.")
         sys.exit(0)
-    return sorted(image_filenames)
+    if args.sort_sets:
+        image_filenames.sort()
+    return image_filenames
 
 
 def dedupe_images(args):
-    target_dir = args.target_dir
-    recursive = args.recursive
     try:
         package_check(args)
-        deduper = ImageDeduper(args, gen_image_filenames(target_dir, recursive))
+        deduper = ImageDeduper(args, gen_image_filenames(args))
         deduper.dedupe(args)
 
         if args.delete:
@@ -120,6 +122,8 @@ def main(argv=sys.argv[1:]):
         help="how to sort duplicate image files (default=filesize)")
     parser.add_argument("--reverse", action="store_true",
         help="reverse order while sorting")
+    parser.add_argument("--sort-sets", action="store_true",
+        help="sort the order of duplicate sets")
     parser.add_argument("--num-proc", type=int, default=None,
         help="number of hash calculation and ngt processes (default=cpu_count-1)")
     parser.add_argument("--log", action="store_true",

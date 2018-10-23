@@ -188,6 +188,10 @@ You can specify following types:
 
 reverse sort order
 
+`--sort-sets`
+
+sort the order of duplicate sets
+
 `--num-proc 4`
 
 number of hash calculation and ngt processes (default=cpu_count-1)

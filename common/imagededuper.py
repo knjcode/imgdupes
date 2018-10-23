@@ -380,7 +380,8 @@ class ImageDeduper:
 
 
         # sort self.group
-        self.sort_group()
+        if args.sort_sets:
+            self.sort_group()
 
         # write duplicate log file
         self.num_duplicate_set = current_group_num - 1
@@ -426,9 +427,9 @@ class ImageDeduper:
             filenames = sorted(filenames)
             tmp_group_list.append(filenames)
 
-        sorted_tmp_group_list = sorted(tmp_group_list)
+        tmp_group_list.sort()
 
-        for key, filenames in enumerate(sorted_tmp_group_list, start=1):
+        for key, filenames in enumerate(tmp_group_list, start=1):
             new_group_dict[key] = filenames
 
         self.group = new_group_dict
