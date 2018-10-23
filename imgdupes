@@ -128,6 +128,8 @@ def main(argv=sys.argv[1:]):
         help="not create or use image hash cache")
     parser.add_argument("--no-subdir-warning", dest="print_warning", action="store_false",
         help="stop warnings that appear when similar images are in different subdirectories")
+    parser.add_argument("--skip-same-dir", action="store_true",
+        help="do not display files included in the same directory")
     parser.add_argument("--sameline", action="store_true",
         help="list each set of matches on a single line")
     parser.add_argument("--dry-run", dest="run", action="store_false",

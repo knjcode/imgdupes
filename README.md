@@ -204,6 +204,10 @@ not create or use image hash cache (default=False)
 
 stop warnings that appear when similar images are in different subdirectories
 
+`--skip-same-dir`
+
+do not display files included in the same directory
+
 `--sameline`
 
 list each set of matches on a single line

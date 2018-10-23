@@ -502,45 +502,51 @@ class ImageDeduper:
             if len(img_list) > 1:
                 current_set += 1
                 sorted_img_list, img_filesize_dict, img_width_dict, img_height_dict = self.sort_image_list(img_list)
-                if args.imgcat:
-                    imgcat_for_iTerm2(create_tile_img(sorted_img_list, args))
 
                 # check different parent dir
                 parent_set = OrderedSet([])
                 for img in sorted_img_list:
                     parent_set.add(str(Path(img).parent))
-                if len(parent_set) > 1 and args.print_warning:
-                    logger.warning(colored('WARNING! Found similar images in different subdirectories.', 'red'))
-                    logger.warning(colored('\n'.join(parent_set), 'red'))
 
-                for index, img in enumerate(sorted_img_list, start=1):
-                    filesize = img_filesize_dict[img]
-                    width = img_width_dict[img]
-                    height = img_height_dict[img]
-                    pixel = "{}x{}".format(width, height)
-                    img_number = "[{}]".format(index)
-                    img_info = "{:>14.2f} kbyte {:>9} {}".format((filesize/1024), pixel, img)
-                    print(img_number + img_info[len(img_number):])
-                print("")
-                print("Set {} of {}, ".format(current_set, self.num_duplicate_set), end='')
-                if args.noprompt:
-                    delete_list = [i for i in range(2, len(sorted_img_list)+1)]
+                if args.skip_same_dir and (len(parent_set) == 1):
+                    continue
+
                 else:
-                    delete_list = self.preserve_file_question(len(sorted_img_list))
-                logger.debug("delete_list: {}".format(delete_list))
+                    if args.imgcat:
+                        imgcat_for_iTerm2(create_tile_img(sorted_img_list, args))
 
-                print("")
-                for i in range(1, len(img_list)+1):
-                    if i in delete_list:
-                        delete_file = sorted_img_list[i-1]
-                        print("   [-] {}".format(delete_file))
-                        if args.run:
-                            self.delete_image(delete_file)
-                        deleted_filenames.append(delete_file)
+                    if len(parent_set) > 1 and args.print_warning:
+                        logger.warning(colored('WARNING! Found similar images in different subdirectories.', 'red'))
+                        logger.warning(colored('\n'.join(parent_set), 'red'))
+
+                    for index, img in enumerate(sorted_img_list, start=1):
+                        filesize = img_filesize_dict[img]
+                        width = img_width_dict[img]
+                        height = img_height_dict[img]
+                        pixel = "{}x{}".format(width, height)
+                        img_number = "[{}]".format(index)
+                        img_info = "{:>14.2f} kbyte {:>9} {}".format((filesize/1024), pixel, img)
+                        print(img_number + img_info[len(img_number):])
+                    print("")
+                    print("Set {} of {}, ".format(current_set, self.num_duplicate_set), end='')
+                    if args.noprompt:
+                        delete_list = [i for i in range(2, len(sorted_img_list)+1)]
                     else:
-                        preserve_file = sorted_img_list[i-1]
-                        print("   [+] {}".format(preserve_file))
-                print("")
+                        delete_list = self.preserve_file_question(len(sorted_img_list))
+                    logger.debug("delete_list: {}".format(delete_list))
+
+                    print("")
+                    for i in range(1, len(img_list)+1):
+                        if i in delete_list:
+                            delete_file = sorted_img_list[i-1]
+                            print("   [-] {}".format(delete_file))
+                            if args.run:
+                                self.delete_image(delete_file)
+                            deleted_filenames.append(delete_file)
+                        else:
+                            preserve_file = sorted_img_list[i-1]
+                            print("   [+] {}".format(preserve_file))
+                    print("")
 
         # write delete log file
         if len(deleted_filenames) >0 and  args.run and args.log:
