@@ -423,12 +423,12 @@ class ImageDeduper:
         tmp_group_list = []
         new_group_dict = {}
         for _, filenames in self.group.items():
-            filenames = sorted(filenames)
+            filenames.sort()
             tmp_group_list.append(filenames)
 
-        sorted_tmp_group_list = sorted(tmp_group_list)
+        tmp_group_list.sort()
 
-        for key, filenames in enumerate(sorted_tmp_group_list, start=1):
+        for key, filenames in enumerate(tmp_group_list, start=1):
             new_group_dict[key] = filenames
 
         self.group = new_group_dict

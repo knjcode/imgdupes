@@ -60,7 +60,8 @@ def gen_image_filenames(target_dir, recursive):
     if len(image_filenames) == 0:
         logger.error("Image not found. To search the directory recursively, add the --recursive option.")
         sys.exit(0)
-    return sorted(image_filenames)
+    image_filenames.sort()
+    return image_filenames
 
 
 def dedupe_images(args):
