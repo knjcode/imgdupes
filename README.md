@@ -106,7 +106,7 @@ You can use `imgdupes` without installing it using a pre-build docker container 
 Place the target directory in the current directory and execute the following command.
 
 ```bash
-$ docker run -it -v $PWD:/app knjcode/imgdupes -rdc --ngt target_dir phash 0
+$ docker run -it -v $PWD:/app knjcode/imgdupes -rdc target_dir phash 0
 ```
 
 When docker run, current directory is mounted inside the container and referenced from imgdupes.
@@ -116,7 +116,7 @@ By aliasing the command, you can use `imgdupes` as installed.
 
 ```bash
 $ alias imgdupes="docker run -it -v $PWD:/app knjcode/imgdupes"
-$ imgdupes -rdc --hnsw target_dir phash 0
+$ imgdupes -rdc target_dir phash 0
 ```
 
 
@@ -254,7 +254,7 @@ do not keep aspect when displaying images
 
 `--ngt`
 
-use NGT for calculating Hamming distance between hash of images (default=False)
+use NGT for calculating Hamming distance between hash of images (default=True)
 
 `--ngt-k 20`
 

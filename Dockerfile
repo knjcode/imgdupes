@@ -1,4 +1,4 @@
-FROM python:3.6.6-slim-stretch
+FROM python:3.6.8-slim-stretch
 
 WORKDIR /app
 
@@ -9,24 +9,10 @@ RUN apt-get update \
   && apt-get install -y cmake git libgtk2.0-dev libblas-dev liblapack-dev \
   && rm -rf /var/lib/apt/lists/*
 
-# install ngt
-RUN git clone https://github.com/yahoojapan/NGT.git \
-  && cd NGT \
-  && git checkout v1.4.5 \
-  && mkdir build && cd build \
-  && cmake .. \
-  && make \
-  && make install \
-  && ldconfig \
-  && cd ../python \
-  && pip install pybind11 \
-  && python setup.py sdist \
-  && pip install dist/ngt-1.2.0.tar.gz
-
 # install hnsw
 RUN git clone https://github.com/nmslib/hnsw.git \
   && cd hnsw/python_bindings \
-  && pip install numpy \
+  && pip install numpy pybind11 \
   && python setup.py install
 
 # install faiss
