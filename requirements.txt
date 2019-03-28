@@ -1,6 +1,7 @@
 future==0.17.1
 ImageHash==4.0
 joblib==0.13.2
+ngt==1.7.5
 numpy==1.16.4
 opencv-python==4.1.0.25
 orderedset==2.0.1

@@ -156,7 +156,7 @@ def main(argv=sys.argv[1:]):
         help="list each set of matches on a single line")
     parser.add_argument("--dry-run", dest="run", action="store_false",
         help="dry run (do not delete any files)")
-    parser.add_argument("--faiss-flat", action="store_true",
+    parser.add_argument("--faiss-flat", action="store_true", default=False,
         help="use faiss exact search (IndexFlatL2) for calculating Hamming distance between hash of images")
     parser.add_argument("--faiss-flat-k", type=int, default=20,
         help="number of searched objects when using faiss-flat (default=20)")
@@ -176,7 +176,7 @@ def main(argv=sys.argv[1:]):
         help="do not keep aspect when displaying imagest")
 
     # ngt options
-    parser.add_argument("--ngt", action="store_true",
+    parser.add_argument("--ngt", action="store_true", default=True,
         help="use NGT for calculating Hamming distance between hash of images")
     parser.add_argument("--ngt-k", type=int, default=20,
         help="""number of searched objects when using NGT.
@@ -192,7 +192,7 @@ def main(argv=sys.argv[1:]):
         help="number of edges at search time (default=40)")
 
     # hnsw options
-    parser.add_argument("--hnsw", action="store_true",
+    parser.add_argument("--hnsw", action="store_true", default=False,
         help="use hnsw for calculating Hamming distance between hash of images")
     parser.add_argument("--hnsw-k", type=int, default=20,
         help="""number of searched objects when using hnsw.
@@ -218,6 +218,10 @@ def main(argv=sys.argv[1:]):
     if args.delete and args.summarize:
         print("options --summarize and --delete are not compatible")
         sys.exit(1)
+
+    # check hnsw or faiss-flat
+    if args.hnsw or args.faiss_flat:
+        args.ngt = False
 
     dedupe_images(args)
 
