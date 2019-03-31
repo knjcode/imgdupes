@@ -61,7 +61,7 @@ class ImageDeduper:
 
 
     def get_hashcache_dump_name(self):
-        return "hash_cache_{}_{}_{}.pkl".format(self.cleaned_target_dir, self.hash_method, self.hash_bits)
+        return "hash_cache_{}_{}_{}.dump".format(self.cleaned_target_dir, self.hash_method, self.hash_bits)
 
 
     def get_duplicate_log_name(self):
@@ -91,11 +91,11 @@ class ImageDeduper:
 
 
     def load_hashcache(self):
-        return self.hashcache.load(self.get_hashcache_dump_name(), self.cache, self.target_dir)
+        return self.hashcache.load_hash_dict(self.get_hashcache_dump_name(), self.cache, self.target_dir)
 
 
     def dump_hashcache(self):
-        return self.hashcache.dump(self.get_hashcache_dump_name(), self.cache)
+        return self.hashcache.dump_hash_dict(self.get_hashcache_dump_name(), self.cache)
 
 
     def get_hash_size(self):
@@ -169,6 +169,7 @@ class ImageDeduper:
             # NGT Approximate neighbor search
             logger.warning("Approximate neighbor searching using NGT")
             hshs = self.hashcache.hshs()
+            filenames = self.hashcache.filenames()
             check_list = [0] * len(hshs)
             current_group_num = 1
             if not args.query:
@@ -188,13 +189,13 @@ class ImageDeduper:
                                         new_group_found = True
                                         check_list[i] = current_group_num
                                         check_list[res[0]] = current_group_num
-                                        self.group[current_group_num] = [self.image_filenames[i]]
-                                        self.group[current_group_num].extend([self.image_filenames[res[0]]])
+                                        self.group[current_group_num] = [filenames[i]]
+                                        self.group[current_group_num].extend([filenames[res[0]]])
                                     else:
                                         # exists group
                                         exists_group_num = check_list[i]
                                         check_list[res[0]] = exists_group_num
-                                        self.group[exists_group_num].extend([self.image_filenames[res[0]]])
+                                        self.group[exists_group_num].extend([filenames[res[0]]])
                     if new_group_found:
                         current_group_num += 1
             else: # query image
@@ -204,7 +205,7 @@ class ImageDeduper:
                 for res in ngt_index.search(hsh, size=args.ngt_k, epsilon=args.ngt_epsilon):
                     if res[1] <= self.hamming_distance:
                         new_group_found = True
-                        self.group[current_group_num].extend([self.image_filenames[res[0]]])
+                        self.group[current_group_num].extend([filenames[res[0]]])
                 if new_group_found:
                     current_group_num += 1
 
@@ -220,6 +221,7 @@ class ImageDeduper:
                 logger.error(colored("Error: Unable to load hnsw. Please install hnsw python binding first.", 'red'))
                 sys.exit(1)
             hshs = self.hashcache.hshs()
+            filenames = self.hashcache.filenames()
             num_elements = len(hshs)
             hshs_labels = np.arange(num_elements)
             hnsw_index = hnswlib.Index(space='l2', dim=self.hash_bits) # Squared L2
@@ -251,13 +253,13 @@ class ImageDeduper:
                                         new_group_found = True
                                         check_list[i] = current_group_num
                                         check_list[label] = current_group_num
-                                        self.group[current_group_num] = [self.image_filenames[i]]
-                                        self.group[current_group_num].extend([self.image_filenames[label]])
+                                        self.group[current_group_num] = [filenames[i]]
+                                        self.group[current_group_num].extend([filenames[label]])
                                     else:
                                         # exists group
                                         exists_group_num = check_list[i]
                                         check_list[label] = exists_group_num
-                                        self.group[exists_group_num].extend([self.image_filenames[label]])
+                                        self.group[exists_group_num].extend([filenames[label]])
                     if new_group_found:
                         current_group_num += 1
             else: # query image
@@ -268,7 +270,7 @@ class ImageDeduper:
                 for label, distance in zip(labels[0], distances[0]):
                     if distance <= self.hamming_distance:
                         new_group_found = True
-                        self.group[current_group_num].extend([self.image_filenames[label]])
+                        self.group[current_group_num].extend([filenames[label]])
                 if new_group_found:
                     current_group_num += 1
 
@@ -280,6 +282,7 @@ class ImageDeduper:
                 logger.error(colored("Error: Unable to load faiss. Please install faiss python binding first.", 'red'))
                 sys.exit(1)
             hshs = self.hashcache.hshs()
+            filenames = self.hashcache.filenames()
             faiss.omp_set_num_threads(num_proc)
             logger.warning("Building faiss index (dimension={}, num_proc={})".format(self.hash_bits, num_proc))
             data = np.array(hshs).astype('float32')
@@ -308,13 +311,13 @@ class ImageDeduper:
                                         new_group_found = True
                                         check_list[i] = current_group_num
                                         check_list[label] = current_group_num
-                                        self.group[current_group_num] = [self.image_filenames[i]]
-                                        self.group[current_group_num].extend([self.image_filenames[label]])
+                                        self.group[current_group_num] = [filenames[i]]
+                                        self.group[current_group_num].extend([filenames[label]])
                                     else:
                                         # exists group
                                         exists_group_num = check_list[i]
                                         check_list[label] = exists_group_num
-                                        self.group[exists_group_num].extend([self.image_filenames[label]])
+                                        self.group[exists_group_num].extend([filenames[label]])
                     if new_group_found:
                         current_group_num += 1
             else: # query image
@@ -325,7 +328,7 @@ class ImageDeduper:
                 for label, distance in zip(labels[0], distances[0]):
                     if distance <= self.hamming_distance:
                         new_group_found = True
-                        self.group[current_group_num].extend([self.image_filenames[label]])
+                        self.group[current_group_num].extend([filenames[label]])
                 if new_group_found:
                     current_group_num += 1
 
