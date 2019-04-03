@@ -78,12 +78,17 @@ def create_tile_img(filename_list, args):
     image_list = []
     for filename in filename_list:
         img = cv2.imread(filename)
-        if args.keep_aspect:
-            part_img = resize_keep_aspect(img, resize_x, resize_y, space_color, interpolation=interpolation)
+        if img is None:
+            # create blank image
+            part_img = np.zeros((resize_y, resize_x, 3), np.uint8)
         else:
-            part_img = cv2.resize(img, (resize_x, resize_y), interpolation=interpolation)
-        if space > 0:
-            part_img = padding_blank(part_img, space, space, 0, 0, space_color)
+            if args.keep_aspect:
+                part_img = resize_keep_aspect(img, resize_x, resize_y, space_color, interpolation=interpolation)
+            else:
+                part_img = cv2.resize(img, (resize_x, resize_y), interpolation=interpolation)
+            if space > 0:
+                part_img = padding_blank(part_img, space, space, 0, 0, space_color)
+
         image_list.append(part_img)
 
     horizontal_image_list = []
