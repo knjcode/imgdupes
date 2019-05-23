@@ -389,10 +389,11 @@ class ImageDeduper:
             duplicate_log_file = "{}_{}".format(now, self.get_duplicate_log_name())
             with open(duplicate_log_file, 'w') as f:
                 if args.query:
-                    f.write("Query: {}\n".format(args.query))
+                    f.write("Query: {}\n\n".format(args.query))
                 for k in range(1, self.num_duplicate_set + 1):
                     img_list = self.group[k]
-                    if len(img_list) > 1:
+                    pad = 1 if args.query else 0
+                    if len(img_list) + pad > 1:
                         sorted_img_list, _, _, _ = self.sort_image_list(img_list)
                         if args.sameline:
                             f.write(" ".join(sorted_img_list) + "\n")
@@ -479,7 +480,8 @@ class ImageDeduper:
 
         for k in range(1, self.num_duplicate_set + 1):
             img_list = self.group[k]
-            if len(img_list) > 1:
+            pad = 1 if args.query else 0
+            if len(img_list) + pad > 1:
                 sorted_img_list, _, _, _ = self.sort_image_list(img_list)
                 if args.imgcat:
                     imgcat_for_iTerm2(create_tile_img(sorted_img_list, args))
@@ -499,7 +501,8 @@ class ImageDeduper:
             print("Query: {}\n".format(args.query))
 
         for _k, img_list in six.iteritems(self.group):
-            if len(img_list) > 1:
+            pad = 1 if args.query else 0
+            if len(img_list) + pad > 1:
                 current_set += 1
                 sorted_img_list, img_filesize_dict, img_width_dict, img_height_dict = self.sort_image_list(img_list)
                 if args.imgcat:
