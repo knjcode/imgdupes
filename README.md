@@ -63,6 +63,7 @@ Use `--query` option to specify a query image file.
 ```bash
 $ imgdupes --recursive target_dir --query target_dir/airplane_0583.jpg phash 4
 Query: sample_airplane.png
+
 target_dir/airplane_0583.jpg
 target_dir/airplane_0800.jpg
 ```
