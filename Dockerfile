@@ -12,7 +12,7 @@ RUN apt-get update \
 # install ngt
 RUN git clone https://github.com/yahoojapan/NGT.git \
   && cd NGT \
-  && git checkout v1.7.4 \
+  && git checkout v1.7.5 \
   && mkdir build && cd build \
   && cmake .. \
   && make \
