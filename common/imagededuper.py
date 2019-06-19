@@ -447,11 +447,17 @@ class ImageDeduper:
         for img in img_list:
             img_filesize_dict[img] = os.path.getsize(img)
             self.duplicate_filesize_dict[img] = img_filesize_dict[img]
-            with Image.open(img) as current_img:
-                width, height = current_img.size
-                img_size_dict[img] = width + height
-                img_width_dict[img] = width
-                img_height_dict[img] = height
+            try:
+                with Image.open(img) as current_img:
+                    width, height = current_img.size
+                    img_size_dict[img] = width + height
+                    img_width_dict[img] = width
+                    img_height_dict[img] = height
+            except:
+                width, height = 0, 0
+                img_size_dict[img] = 0
+                img_width_dict[img] = 0
+                img_height_dict[img] = 0
         if self.sort:
             if self.sort == 'filesize':
                 sorted_filesize_dict = sorted(img_filesize_dict.items(), key=itemgetter(1), reverse=rev)
