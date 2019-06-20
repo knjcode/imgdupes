@@ -101,6 +101,9 @@ To dedupe images using NGT, run with `--ngt` option after installing NGT and pyt
 $ imgdupes -rdc --ngt 101_ObjectCategories phash 4
 ```
 
+**Notice**: `--ngt` option is enabled by default from version 0.1.0.
+
+
 For instructions on installing NGT and python binding, see [NGT] and [python NGT].
 
 To dedupe images using hnsw, run with `--hnsw` option after installing hnsw python binding.
