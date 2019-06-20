@@ -55,6 +55,28 @@ With `-N` or `--noprompt` option, you can preserve the first file in each set of
 $ imgdupes -rdN 101_ObjectCategories phash 0
 ```
 
+## To take input from a list of files
+
+Use `--files-from` or `-T` option to take input from a list of files.
+
+```bash
+$ imgdupes -T image_list.txt phash 0
+```
+
+For example, create `image_list.txt` as below.
+```
+101_ObjectCategories/Faces/image_0345.jpg
+101_ObjectCategories/Motorbikes/image_0269.jpg
+101_ObjectCategories/Motorbikes/image_0735.jpg
+101_ObjectCategories/brain/image_0047.jpg
+101_ObjectCategories/headphone/image_0034.jpg
+101_ObjectCategories/dollar_bill/image_0038.jpg
+101_ObjectCategories/ferry/image_0020.jpg
+101_ObjectCategories/tick/image_0049.jpg
+101_ObjectCategories/Faces_easy/image_0283.jpg
+101_ObjectCategories/watch/image_0171.jpg
+```
+
 
 ## Find near-duplicated images from an image you specified
 
