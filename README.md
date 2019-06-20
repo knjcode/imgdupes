@@ -184,6 +184,7 @@ You can specify following types:
 - `imagesize`: sort by pixel width and height in descenging order
 - `width`: sort by pixel width in descending order
 - `height`: sort by pixel height in descending order
+- `none`: do not sort
 
 `--reverse`
 

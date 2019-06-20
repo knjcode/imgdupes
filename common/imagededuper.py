@@ -383,7 +383,8 @@ class ImageDeduper:
 
 
         # sort self.group
-        self.sort_group()
+        if self.sort != 'none':
+            self.sort_group()
 
         # write duplicate log file
         self.num_duplicate_set = current_group_num - 1
@@ -444,6 +445,8 @@ class ImageDeduper:
         img_size_dict = {}
         img_width_dict = {}
         img_height_dict = {}
+        if self.sort == 'none':
+            return img_list, img_filesize_dict, img_width_dict, img_height_dict
         for img in img_list:
             img_filesize_dict[img] = os.path.getsize(img)
             self.duplicate_filesize_dict[img] = img_filesize_dict[img]

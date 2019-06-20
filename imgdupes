@@ -47,7 +47,7 @@ def package_check(args):
         pass
 
 
-def gen_image_filenames(target_dir, recursive):
+def gen_image_filenames(target_dir, recursive, sort_type):
     image_filenames = []
     if recursive:
         for path in Path(target_dir).glob('**/*'):
@@ -60,7 +60,11 @@ def gen_image_filenames(target_dir, recursive):
     if len(image_filenames) == 0:
         logger.error("Image not found. To search the directory recursively, add the --recursive option.")
         sys.exit(0)
-    return sorted(image_filenames)
+    if sort_type != 'none':
+        image_filenames.sort()
+    return image_filenames
+
+
 
 
 def dedupe_images(args):
@@ -116,7 +120,7 @@ def main(argv=sys.argv[1:]):
             For example, you can specify 64(8^2), 144(12^2), 256(16^2)
             """)
     parser.add_argument("--sort", type=str,
-        choices=['filesize', 'filepath', 'imagesize', 'width', 'height'],
+        choices=['filesize', 'filepath', 'imagesize', 'width', 'height', 'none'],
         help="how to sort duplicate image files (default=filesize)")
     parser.add_argument("--reverse", action="store_true",
         help="reverse order while sorting")
