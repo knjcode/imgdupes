@@ -149,7 +149,8 @@ class ImageDeduper:
         else:
             num_proc = args.num_proc
 
-        if self.ngt:
+        # Use NGT by default
+        if (not self.hnsw) and (not self.faiss_flat):
             try:
                 import ngtpy
             except:
@@ -286,20 +287,20 @@ class ImageDeduper:
             faiss.omp_set_num_threads(num_proc)
             logger.warning("Building faiss index (dimension={}, num_proc={})".format(self.hash_bits, num_proc))
             data = np.array(hshs).astype('float32')
-            index = faiss.IndexFlatL2(self.hash_bits) # Exact search
-            index.add(data)
+            faiss_flat_index = faiss.IndexFlatL2(self.hash_bits) # Exact search
+            faiss_flat_index.add(data)
 
             # faiss Exact neighbor search
             logger.warning("Exact neighbor searching using faiss")
-            check_list = [0] * index.ntotal
+            check_list = [0] * faiss_flat_index.ntotal
             current_group_num = 1
             if not args.query:
-                for i in tqdm(range(index.ntotal)):
+                for i in tqdm(range(faiss_flat_index.ntotal)):
                     new_group_found = False
                     if check_list[i] != 0:
                         # already grouped image
                         continue
-                    distances, labels = index.search(data[[i]], args.faiss_flat_k)
+                    distances, labels = faiss_flat_index.search(data[[i]], args.faiss_flat_k)
                     for label, distance in zip(labels[0], distances[0]):
                         if label == i:
                             continue
@@ -324,60 +325,11 @@ class ImageDeduper:
                 new_group_found = False
                 hsh = np.array([self.hashcache.gen_hash(args.query)]).astype('float32')
                 self.group[current_group_num] = []
-                distances, labels = index.search(hsh, args.faiss_flat_k)
+                distances, labels = faiss_flat_index.search(hsh, args.faiss_flat_k)
                 for label, distance in zip(labels[0], distances[0]):
                     if distance <= self.hamming_distance:
                         new_group_found = True
                         self.group[current_group_num].extend([filenames[label]])
-                if new_group_found:
-                    current_group_num += 1
-
-
-        else:
-            logger.warning("Searching similar images")
-            hshs = self.hashcache.hshs()
-            check_list = [0] * len(hshs)
-            current_group_num = 1
-            if not args.query:
-                for i in tqdm(range(len(hshs))):
-                    new_group_found = False
-                    hshi = hshs[i]
-                    for j in range(i+1, len(hshs)):
-                        hshj = hshs[j]
-                        hamming_distance = np.count_nonzero(hshi != hshj)
-                        if hamming_distance <= self.hamming_distance:
-                            if check_list[j] == 0:
-                                if check_list[i] == 0:
-                                    # new group
-                                    new_group_found = True
-                                    check_list[i] = current_group_num
-                                    check_list[j] = current_group_num
-                                    self.group[current_group_num] = [self.image_filenames[i]]
-                                    self.group[current_group_num].extend([self.image_filenames[j]])
-                                else:
-                                    # exists group
-                                    exists_group_num = check_list[i]
-                                    # check hamming distances of exists group
-                                    for filename in self.group[exists_group_num]:
-                                        h = hshs[self.image_filenames.index(filename)]
-                                        hamming_distance = np.count_nonzero(h != hshj)
-                                        if not hamming_distance <= self.hamming_distance:
-                                            continue
-                                    check_list[j] = exists_group_num
-                                    self.group[exists_group_num].extend([self.image_filenames[j]])
-
-                    if new_group_found:
-                        current_group_num += 1
-            else: # query image
-                new_group_found = False
-                hsh = self.hashcache.gen_hash(args.query)
-                self.group[current_group_num] = []
-                for i in tqdm(range(len(hshs))):
-                    hshi = hshs[i]
-                    hamming_distance = np.count_nonzero(hshi != hsh)
-                    if hamming_distance <= self.hamming_distance:
-                        new_group_found = True
-                        self.group[current_group_num].extend([self.image_filenames[i]])
                 if new_group_found:
                     current_group_num += 1
 
@@ -428,12 +380,12 @@ class ImageDeduper:
         tmp_group_list = []
         new_group_dict = {}
         for _, filenames in self.group.items():
-            filenames = sorted(filenames)
+            filenames.sort()
             tmp_group_list.append(filenames)
 
-        sorted_tmp_group_list = sorted(tmp_group_list)
+        tmp_group_list.sort()
 
-        for key, filenames in enumerate(sorted_tmp_group_list, start=1):
+        for key, filenames in enumerate(tmp_group_list, start=1):
             new_group_dict[key] = filenames
 
         self.group = new_group_dict

@@ -22,6 +22,7 @@ setuptools.setup(
         'future',
         'ImageHash',
         'joblib',
+        'ngt',
         'numpy',
         'opencv-python',
         'orderedset',

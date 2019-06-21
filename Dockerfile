@@ -26,7 +26,7 @@ RUN git clone https://github.com/yahoojapan/NGT.git \
 # install hnsw
 RUN git clone https://github.com/nmslib/hnsw.git \
   && cd hnsw/python_bindings \
-  && pip install numpy \
+  && pip install numpy pybind11 \
   && python setup.py install
 
 # install faiss
