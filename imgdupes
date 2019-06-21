@@ -24,6 +24,12 @@ def is_image(path):
     return path.suffix in img_file_ext
 
 
+def is_image_with_str(filepath):
+    img_file_ext = ['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG', 'gif', 'GIF']
+    suffix = filepath.split('.')[-1]
+    return suffix in img_file_ext
+
+
 def package_check(args):
     if args.ngt:
         try:
@@ -65,14 +71,26 @@ def gen_image_filenames(target_dir, recursive, sort_type):
     return image_filenames
 
 
+def gen_image_filenames_from_list(target_files, sort_type):
+    image_filenames = []
+    with open(target_files, 'r') as f:
+        image_filenames = [line.rstrip() for line in f.readlines() if is_image_with_str(line.rstrip())]
+    if len(image_filenames) == 0:
+        logger.error("Image not found. To search the directory recursively, add the --recursive option.")
+        sys.exit(0)
+    if sort_type != 'none':
+        image_filenames.sort()
+    return image_filenames
 
 
 def dedupe_images(args):
-    target_dir = args.target_dir
-    recursive = args.recursive
     try:
         package_check(args)
-        deduper = ImageDeduper(args, gen_image_filenames(target_dir, recursive))
+        if args.files_from:
+            image_filenames = gen_image_filenames_from_list(args.files_from, args.sort)
+        else:
+            image_filenames = gen_image_filenames(args.target_dir, args.recursive, args.sort)
+        deduper = ImageDeduper(args, image_filenames)
         deduper.dedupe(args)
 
         if args.delete:
@@ -91,7 +109,7 @@ def main(argv=sys.argv[1:]):
     import argparse
     parser = argparse.ArgumentParser(
         description="finding and deleting duplicate image files based on perceptual hash")
-    parser.add_argument("target_dir", type=str)
+    parser.add_argument("target_dir", type=str, nargs='?')
     parser.add_argument("hash_method", type=str,
         choices=['ahash', 'phash', 'dhash', 'whash', 'phash_org'],
         help="""method of perceptual hashing.
@@ -102,6 +120,8 @@ def main(argv=sys.argv[1:]):
     # parser.add_argument("--preserve_largest", type=str,
     #     choice=['filesize', 'pixelsize'],
     #     help="preserve the larget filesize or pixelsize image from duplicate images")
+    parser.add_argument('--files-from', '-T', type=str, default=None,
+        help="use list of target image filename for input")
     parser.add_argument("-r", "--recursive", action="store_true", default=False,
         help="search images recursively from the target directory")
     parser.add_argument("-d", "--delete", action="store_true",
@@ -187,6 +207,12 @@ def main(argv=sys.argv[1:]):
         help="controls recall. higher ef leads to better accuracy, but slower search (default=50)")
 
     args = parser.parse_args()
+
+    if (args.target_dir is None) and (args.files_from is None):
+        print("Positional argument 'target_dir' is required when not specified --files-from option.")
+        sys.exit(1)
+    elif args.target_dir and args.files_from:
+        logger.warning(colored("Both 'target_dir' and `--files-from` option are specified. `target_dir` is ignored.", 'red'))
 
     # check options
     if args.delete and args.summarize:
