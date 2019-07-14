@@ -36,6 +36,7 @@ from common.hashcache import HashCache
 class ImageDeduper:
     def __init__(self, args, image_filenames):
         self.target_dir = args.target_dir
+        self.files_from = args.files_from
         self.recursive = args.recursive
         self.hash_bits = args.hash_bits
         self.sort = args.sort
@@ -48,15 +49,18 @@ class ImageDeduper:
         self.hnsw = args.hnsw
         self.faiss_flat = args.faiss_flat
         self.hash_size = self.get_hash_size()
-        self.cleaned_target_dir = self.get_valid_filename(args.target_dir)
+        self.cleaned_target_dir = self.get_valid_filename()
         self.duplicate_filesize_dict = {}
         self.hashcache = HashCache(args, self.image_filenames, self.hash_method, self.hash_size, args.num_proc)
         self.group = {}
         self.num_duplicate_set = 0
 
 
-    def get_valid_filename(self, path):
-        path = str(path).strip().replace(' ', '_')
+    def get_valid_filename(self):
+        if self.files_from:
+            path = str(self.files_from).strip().replace(' ', '_').replace('.', '_')
+        else:
+            path = str(self.target_dir).strip().replace(' ', '_')
         return re.sub(r'(?u)[^-\w.]', '', path)
 
 
