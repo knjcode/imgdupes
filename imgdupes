@@ -210,6 +210,10 @@ def main(argv=sys.argv[1:]):
     parser.add_argument("--faiss-cuda", action="store_true", default=False,
         help="attempt to use CUDA enabled GPU for searches")
 
+    # CUDA options
+    parser.add_argument("--cuda-device", type=int, default=-1,
+        help="uses the specific CUDA device passed (default=device with lowest load)")
+
     args = parser.parse_args()
 
     if (args.target_dir is None) and (args.files_from is None):

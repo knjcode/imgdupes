@@ -28,7 +28,6 @@ import six
 import sys
 import math
 import GPUtil
-import warnings
 import numpy as np
 
 from common.imgcatutil import imgcat_for_iTerm2, create_tile_img
@@ -51,9 +50,18 @@ class ImageDeduper:
         self.hnsw = args.hnsw
         self.faiss_flat = args.faiss_flat
         self.faiss_cuda = args.faiss_cuda
-        if self.faiss_cuda and not self.cuda_on_system():
-            warnings.warn("There were no CUDA enabled devices found on this system. Defaulting to CPU...")
+        if self.faiss_cuda and len(GPUtil.getGPUs()) <= 0:
+            logger.warning("There were no CUDA enabled devices found on this system. Defaulting to CPU...")
             self.faiss_cuda = False
+        self.cuda_device = args.cuda_device
+        if self.faiss_cuda:
+            if self.cuda_device == -1:
+                self.cuda_device = self.get_lowest_load_cuda_device()
+                logger.info("CUDA device auto selected. CUDA Device: {}".format(self.cuda_device))
+            elif self.cuda_device >= len(GPUtil.getGPUs()):
+                self.cuda_device = self.get_lowest_load_cuda_device()
+                logger.warning("The passed CUDA device was not found on the system. Defaulting to device: "
+                               "{}".format(self.cuda_device))
         self.hash_size = self.get_hash_size()
         self.cleaned_target_dir = self.get_valid_filename()
         self.duplicate_filesize_dict = {}
@@ -115,9 +123,15 @@ class ImageDeduper:
             logger.warning(colored("hash_bits must be the square of n. Use {} as hash_bits".format(self.hash_bits), 'red'))
         return hash_size
 
-
-    def cuda_on_system(self):
-        return len(GPUtil.getGPUs()) > 0
+    def get_lowest_load_cuda_device(self):
+        devices = GPUtil.getGPUs()
+        device = None
+        for d in devices:
+            if device is None:
+                device = d
+            if d.load < device.load:
+                device = d
+        return device.id
 
 
     def preserve_file_question(self, file_num):
@@ -304,7 +318,7 @@ class ImageDeduper:
             faiss_flat_index = faiss.IndexFlatL2(self.hash_bits)  # Exact search
             if self.faiss_cuda:
                 res = faiss.StandardGpuResources()
-                faiss_flat_index = faiss.index_cpu_to_gpu(res, 0, faiss_flat_index)  # Convert to CUDA
+                faiss_flat_index = faiss.index_cpu_to_gpu(res, self.cuda_device, faiss_flat_index)  # Convert to CUDA
             faiss_flat_index.add(data)
 
             # faiss Exact neighbor search

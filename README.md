@@ -324,6 +324,21 @@ m is tightly connected with internal dimensionality of the data stronlgy affects
 
 controls recall. higher ef leads to better accuracy, but slower search (default=50)
 
+## faiss options
+
+`--faiss-cuda`
+
+uses CUDA enabled device for faster searching (requires faiss-gpu, Nvidia GPU, and CUDA toolkit) <br/>
+Install: https://github.com/facebookresearch/faiss/blob/master/INSTALL.md <br/>
+General: https://github.com/facebookresearch/faiss/wiki/Faiss-on-the-GPU
+
+## CUDA options
+
+`--cuda-device`
+
+uses the specific CUDA device passed for CUDA accelerated searches (default=device with lowest load) <br/>
+NOTE: if the device passed is not found on the system the CUDA device with the lowest load will be used
+
 
 # License
 

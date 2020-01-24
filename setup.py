@@ -35,5 +35,6 @@ setuptools.setup(
         'termcolor',
         'tqdm',
         'webcolors',
+        'GPUtil'
     ],
 )
