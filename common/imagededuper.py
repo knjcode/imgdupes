@@ -57,11 +57,11 @@ class ImageDeduper:
         if self.faiss_cuda:
             if self.cuda_device == -1:
                 self.cuda_device = self.get_lowest_load_cuda_device()
-                logger.info("CUDA device auto selected. CUDA Device: {}".format(self.cuda_device))
+                logger.warning("CUDA device auto selected. CUDA Device: {}".format(self.cuda_device))
             elif self.cuda_device >= len(GPUtil.getGPUs()):
                 self.cuda_device = self.get_lowest_load_cuda_device()
-                logger.warning("The passed CUDA device was not found on the system. Defaulting to device: "
-                               "{}".format(self.cuda_device))
+                logger.warning(colored("The passed CUDA device was not found on the system. Defaulting to device: "
+                               "{}".format(self.cuda_device), 'red'))
         self.hash_size = self.get_hash_size()
         self.cleaned_target_dir = self.get_valid_filename()
         self.duplicate_filesize_dict = {}
