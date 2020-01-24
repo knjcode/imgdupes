@@ -27,6 +27,8 @@ import re
 import six
 import sys
 import math
+import GPUtil
+import warnings
 import numpy as np
 
 from common.imgcatutil import imgcat_for_iTerm2, create_tile_img
@@ -48,6 +50,10 @@ class ImageDeduper:
         self.ngt = args.ngt
         self.hnsw = args.hnsw
         self.faiss_flat = args.faiss_flat
+        self.faiss_cuda = args.faiss_cuda
+        if self.faiss_cuda and not self.cuda_on_system():
+            warnings.warn("There were no CUDA enabled devices found on this system. Defaulting to CPU...")
+            self.faiss_cuda = False
         self.hash_size = self.get_hash_size()
         self.cleaned_target_dir = self.get_valid_filename()
         self.duplicate_filesize_dict = {}
@@ -108,6 +114,10 @@ class ImageDeduper:
             self.hash_bits = hash_size ** 2
             logger.warning(colored("hash_bits must be the square of n. Use {} as hash_bits".format(self.hash_bits), 'red'))
         return hash_size
+
+
+    def cuda_on_system(self):
+        return len(GPUtil.getGPUs()) > 0
 
 
     def preserve_file_question(self, file_num):
@@ -291,7 +301,10 @@ class ImageDeduper:
             faiss.omp_set_num_threads(num_proc)
             logger.warning("Building faiss index (dimension={}, num_proc={})".format(self.hash_bits, num_proc))
             data = np.array(hshs).astype('float32')
-            faiss_flat_index = faiss.IndexFlatL2(self.hash_bits) # Exact search
+            faiss_flat_index = faiss.IndexFlatL2(self.hash_bits)  # Exact search
+            if self.faiss_cuda:
+                res = faiss.StandardGpuResources()
+                faiss_flat_index = faiss.index_cpu_to_gpu(res, 0, faiss_flat_index)  # Convert to CUDA
             faiss_flat_index.add(data)
 
             # faiss Exact neighbor search
