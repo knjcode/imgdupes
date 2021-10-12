@@ -4,7 +4,7 @@ ImageHash==4.0
 joblib==0.13.2
 ngt==1.7.6
 numpy==1.16.4
-opencv-python==4.1.0.25
+opencv-python==4.2.0.32
 orderedset==2.0.1
 pathlib==1.0.1
 pathos==0.2.4
