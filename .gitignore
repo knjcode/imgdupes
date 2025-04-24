@@ -7,3 +7,4 @@ build/
 dist/
 imgdupes.egg-info/
 .idea
+*.dump

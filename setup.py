@@ -18,7 +18,7 @@ setuptools.setup(
     url="https://github.com/knjcode/imgdupes",
     packages=setuptools.find_packages(),
     scripts=['imgdupes'],
-    python_requires='>=3.6',
+    python_requires='>=3.8',
     install_requires=[
         'future',
         'ImageHash',
