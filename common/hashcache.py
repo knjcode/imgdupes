@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 from logging import getLogger, StreamHandler, DEBUG
 logger = getLogger(__name__)
 handler = StreamHandler()
@@ -13,14 +10,11 @@ logger.propagate = False
 from multiprocessing import cpu_count
 from pathlib import Path
 from PIL import Image, ImageFile
-from tqdm import tqdm
 
 import imagehash
 import joblib
 import sys
-import six
 import numpy
-import scipy
 
 from common.spinner import Spinner
 
@@ -67,10 +61,7 @@ class HashCache:
         try:
             spinner = Spinner(prefix="Calculating image hashes (hash-bits={} num-proc={})...".format(self.hash_bits, self.num_proc))
             spinner.start()
-            if six.PY2:
-                from pathos.multiprocessing import ProcessPool as Pool
-            elif six.PY3:
-                from multiprocessing import Pool
+            from multiprocessing import Pool
             pool = Pool(self.num_proc)
             self.cache = pool.map(self.gen_hash, self.image_filenames)
             spinner.stop()
@@ -103,10 +94,7 @@ class HashCache:
                 for f in lost_set:
                     del self.hash_dict[f]
 
-                if six.PY2:
-                    from pathos.multiprocessing import ProcessPool as Pool
-                elif six.PY3:
-                    from multiprocessing import Pool
+                from multiprocessing import Pool
                 pool = Pool(self.num_proc)
                 hashes = pool.map(self.gen_hash, target_files)
                 for filename, hash_value in zip(target_files, hashes):

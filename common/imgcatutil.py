@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-from __future__ import (absolute_import, division, print_function)
-
 from logging import getLogger, StreamHandler, DEBUG
 logger = getLogger(__name__)
 handler = StreamHandler()
@@ -11,7 +6,6 @@ handler = StreamHandler()
 logger.addHandler(handler)
 logger.propagate = False
 
-from six import string_types
 from base64 import b64encode
 
 import cv2
@@ -68,7 +62,7 @@ def chunks(l, n):
 
 
 def create_tile_img(filename_list, args):
-    if isinstance(args.space_color, string_types):
+    if isinstance(args.space_color, str):
         space_color = webcolors.name_to_rgb(args.space_color)
     # interpolation = getattr(cv2, args.interpolation, 1)
     space = args.space

@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from __future__ import (absolute_import, division, print_function)
-
 from logging import getLogger, StreamHandler, DEBUG
 logger = getLogger(__name__)
 handler = StreamHandler()
@@ -14,7 +12,7 @@ logger.propagate = False
 
 from pathlib import Path
 from common.imagededuper import ImageDeduper
-from termcolor import colored, cprint
+from termcolor import colored
 
 import sys
 

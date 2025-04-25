@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-from __future__ import (absolute_import, division, print_function)
-
 from logging import getLogger, StreamHandler, DEBUG
 logger = getLogger(__name__)
 handler = StreamHandler()
@@ -17,14 +12,12 @@ from multiprocessing import cpu_count
 from operator import itemgetter
 from pathlib import Path
 from PIL import Image
-from termcolor import colored, cprint
+from termcolor import colored
 from tqdm import tqdm
-from orderedset import OrderedSet
+from boltons.setutils import IndexedSet
 
-import imagehash
 import os
 import re
-import six
 import sys
 import math
 import GPUtil
@@ -137,7 +130,7 @@ class ImageDeduper:
     def preserve_file_question(self, file_num):
         preserve_all = {"all": True, "a": True}
         delete_all = {"none":True, "no": True, "n": True}
-        file_num_set = OrderedSet([i for i in range(1,file_num+1)])
+        file_num_set = IndexedSet([i for i in range(1,file_num+1)])
         prompt = "preserve files [1 - {}, all, none]: ".format(file_num)
         error_prompt = "Please respond with comma-separated file numbers or all (a) or none (n).\n"
 
@@ -152,7 +145,7 @@ class ImageDeduper:
                 return [i for i in range(1,file_num+1)]
             else:
                 try:
-                    input_num_set = OrderedSet([int(i) for i in choice.split(',')])
+                    input_num_set = IndexedSet([int(i) for i in choice.split(',')])
                     logger.debug("input_num_set: {}".format(input_num_set))
                     delete_set = file_num_set - input_num_set
                     valid_set = input_num_set - file_num_set
@@ -495,7 +488,7 @@ class ImageDeduper:
                 imgcat_for_iTerm2(create_tile_img([args.query], args))
             print("Query: {}\n".format(args.query))
 
-        for _k, img_list in six.iteritems(self.group):
+        for _k, img_list in self.group.items():
             pad = 1 if args.query else 0
             if len(img_list) + pad > 1:
                 current_set += 1
@@ -504,7 +497,7 @@ class ImageDeduper:
                     imgcat_for_iTerm2(create_tile_img(sorted_img_list, args))
 
                 # check different parent dir
-                parent_set = OrderedSet([])
+                parent_set = IndexedSet([])
                 for img in sorted_img_list:
                     parent_set.add(str(Path(img).parent))
                 if len(parent_set) > 1 and args.print_warning:
