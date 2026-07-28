@@ -6,7 +6,7 @@ ngt==2.3.12
 numpy
 opencv-python
 pathlib==1.0.1
-Pillow==10.4.0
+Pillow==12.3.0
 scipy
 setuptools
 termcolor==2.4.0
